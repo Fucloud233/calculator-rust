@@ -1,0 +1,60 @@
+// operator
+
+plus_opt = { "+" }
+sub_opt = { "-" }
+mul_opt = { "*" | "\\times"}
+div_opt = { "/" | "\\div"}
+
+assiment_opt = { "=" }
+subscript = { "_" }
+supscript = { "^" }
+
+
+// how handle newline?
+// 1. using \r\n: more intuitive
+// 2. using \\: more latex-like
+
+LP = { "(" }
+RP = { ")" }
+LB = { "[" }
+RB = { "] "}
+LC = { "{" }
+RC = { "}" }
+
+
+line = { exp }
+
+
+id = { "a" }
+
+term =  {    LP ~ exp ~ RP
+        }
+
+factor = { LC ~ exp ~ RC }
+
+exp =   { 
+    id
+    | term
+    // | plus
+    // | sub
+    // | mul
+    // | div
+    // | power
+    | root 
+    | log
+} 
+
+
+plus =  { exp ~ plus_opt ~ exp}
+sub =   { exp ~ sub_opt ~ exp}
+mul =   { exp ~ mul_opt ~ exp}
+div =   { exp ~ div_opt ~ exp 
+            | "\\frac" ~ exp ~ exp }
+power = {   exp ~ "^" ~ exp
+            | "\\exp" ~ exp}
+
+root =  {   "\\sqrt" ~ LC ~ exp ~ RC}
+log =   {   (("\\log" ~ (subscript ~ exp)? ) | "\\ln") ~ LC ~ exp ~ RC }
+
+
+
