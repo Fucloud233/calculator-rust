@@ -6,6 +6,17 @@ grammar<'err>(errors: &'err mut Vec<ErrorRecovery<usize, Token<'input>, &'static
 
 // ==================== lexer ====================
 
+// use match-use to set the priority of regular expression
+// remember use of _ at the end of else
+// otherwise the following expression won't be matched
+match {
+    r"[0-9]"
+} else {
+    r"-?[1-9][0-9]+|0",
+    _
+}
+
+
 Subscript = "_";
 Supscript = "^";
 
@@ -33,9 +44,10 @@ pub (crate) Int: i64 = {
     r"-?[1-9][0-9]+|0" => i64::from_str(<>).unwrap()
 }
 
-// SingleInt: i64 = {
-//     r"[0-9]" => i64::from_str(<>).unwrap()
-// }
+SingleInt: i64 = {
+    r"[0-9]" => i64::from_str(<>).unwrap()
+}
+
 Float: f64 = {
     // TODO: float type implement
 }
@@ -56,14 +68,7 @@ pub (crate) Id: ast::ID = {
 // }
 
 LatexTerm: Box<ast::Expr> = {
-    // Int => {
-    //     if <> < 0 || <> > 9 {
-    //         errors.push(<>);
-    //     }
-    //     Box::new(Expr::Error)
-    // },
-
-    Int => Box::new(ast::Expr::Int(<>)),
+    SingleInt => Box::new(ast::Expr::Int(<>)),
 
     // r"[0-9]" => Box::new(ast::Expr::Int(i64::from_str(<>))) ,
     Id => Box::new(ast::Expr::Id(<>)),
