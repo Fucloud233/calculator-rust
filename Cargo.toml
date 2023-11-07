@@ -6,3 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# if you want to use this crate
+# you must import it in the same way as below
+lalrpop-util = { version = "0.20.0", features = ["lexer", "unicode"] }
+
+[build-dependencies]
+lalrpop= "0.20.0"
