@@ -1,3 +1,6 @@
 /target
 
 .vscode
+
+# the output by lalrpop
+calculator.rs
