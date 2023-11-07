@@ -1,0 +1,25 @@
+use crate::ast;
+use std::str::FromStr;
+
+grammar;
+
+pub Int: i64 = {
+    r"[0-9]+" => i64::from_str(<>).unwrap()
+}
+
+pub Float: f64 = {
+    // TODO: float type implement
+}
+
+pub Id: ast::ID = {
+    r"[a-b]|[x-z]" => ast::ID::ASCII(<>.chars().next().unwrap()),
+    "\\alpha" => ast::ID::Rome(ast::Rome::Alpha),
+    "\\beta" => ast::ID::Rome(ast::Rome::Beta),
+    "\\gamma" => ast::ID::Rome(ast::Rome::Gamma),
+    "\\pi" => ast::ID::Pi,
+    "e" => ast::ID::E,
+}
+
+pub Expr: ast::Expr = {
+    Int => ast::Expr::Int(<>),
+};
