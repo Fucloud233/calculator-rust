@@ -1,17 +1,46 @@
 use crate::ast;
 use std::str::FromStr;
+use lalrpop_util::ErrorRecovery;
 
-grammar;
+grammar<'err>(errors: &'err mut Vec<ErrorRecovery<usize, Token<'input>, &'static str>>);
 
-pub Int: i64 = {
-    r"[0-9]+" => i64::from_str(<>).unwrap()
+// ==================== lexer ====================
+
+Subscript = "_";
+Supscript = "^";
+
+LP = "(";
+RP = ")";
+LB = "[";
+RB = "]";
+LC = "{";
+RC = "}";
+
+// latex: excape character
+FRAC = "\\frac";
+EXP = "\\exp";
+SQRT = "\\sqrt";
+LOG = "\\log";
+LN = "\\ln";
+
+PlusOpt: ast::Opt = { "+" => ast::Opt::Plus}
+SubOpt: ast::Opt = { "-" => ast::Opt::Sub}
+MulOpt: ast::Opt = { r"\*|\times" => ast::Opt::Mul}
+DivOpt: ast::Opt = { r"/|\div" => ast::Opt::Div}
+
+
+pub (crate) Int: i64 = {
+    r"-?[1-9][0-9]+|0" => i64::from_str(<>).unwrap()
 }
 
-pub Float: f64 = {
+// SingleInt: i64 = {
+//     r"[0-9]" => i64::from_str(<>).unwrap()
+// }
+Float: f64 = {
     // TODO: float type implement
 }
 
-pub Id: ast::ID = {
+pub (crate) Id: ast::ID = {
     r"[a-b]|[x-z]" => ast::ID::ASCII(<>.chars().next().unwrap()),
     "\\alpha" => ast::ID::Rome(ast::Rome::Alpha),
     "\\beta" => ast::ID::Rome(ast::Rome::Beta),
@@ -20,6 +49,31 @@ pub Id: ast::ID = {
     "e" => ast::ID::E,
 }
 
-pub Expr: ast::Expr = {
-    Int => ast::Expr::Int(<>),
+// ==================== parser ====================
+
+// Term: Box<ast::Expr> = {
+//     Int => Box::new(ast::Expr::Int(<>)),
+// }
+
+LatexTerm: Box<ast::Expr> = {
+    // Int => {
+    //     if <> < 0 || <> > 9 {
+    //         errors.push(<>);
+    //     }
+    //     Box::new(Expr::Error)
+    // },
+
+    Int => Box::new(ast::Expr::Int(<>)),
+
+    // r"[0-9]" => Box::new(ast::Expr::Int(i64::from_str(<>))) ,
+    Id => Box::new(ast::Expr::Id(<>)),
+    LC <value: Int> RC => Box::new(ast::Expr::Int(value))
+    
+}
+
+
+pub Expr: Box<ast::Expr> = {
+    // <l: Expr> <opt: PlusOpt> <r: Term> => Box::new(ast::Expr::Opt{<>})
+    // FRAC 
+    // FRAC r"[0-9]" r"[0-9]" => Box::new(ast::Expr::Int(0))
 };
