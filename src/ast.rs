@@ -7,16 +7,16 @@ pub enum Expr {
     Id(ID),
     Int(i64),
     Float(i64),
-    Op{
-        first: Box<Expr>,
-        second: Box<Expr>,
+    Opt{
+        l: Box<Expr>,
+        r: Box<Expr>,
         opt: Opt
     },
 }
 
 #[derive(Debug, PartialEq)]
 pub enum Opt {
-    Plus, Sub, Mul, Div, Power, Root, Log
+    Plus, Sub, Mul, Div, Power, Root, Log, Assign
 }
 
 #[derive(Debug, PartialEq)]
