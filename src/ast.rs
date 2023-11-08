@@ -7,28 +7,29 @@ pub enum Expr {
     Id(ID),
     Int(i64),
     Float(i64),
-    Opt{
+    Operation{
         l: Box<Expr>,
         r: Box<Expr>,
-        opt: Opt
+        opt: Operator
     },
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Opt {
+pub enum Operator {
     Plus, Sub, Mul, Div, Power, Root, Log, Assign
 }
 
 #[derive(Debug, PartialEq)]
 pub enum ID {
     ASCII(char),
-    Rome(Rome),
+    Greek(Greek),
     Pi,
     E,
 }
 
+// Greek alphabet
 #[derive(Debug, PartialEq)]
-pub enum Rome {
+pub enum Greek {
     Alpha,
     Beta,
     Gamma
