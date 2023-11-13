@@ -6,17 +6,24 @@
 pub enum Expr {
     Id(ID),
     Int(i64),
-    Float(i64),
-    Operation{
+    Float(f64),
+    Operation {
         l: Box<Expr>,
         r: Box<Expr>,
-        opt: Operator
+        opt: Operator,
     },
 }
 
 #[derive(Debug, PartialEq)]
 pub enum Operator {
-    Plus, Sub, Mul, Div, Power, Root, Log, Assign
+    Plus,
+    Sub,
+    Mul,
+    Div,
+    Power,
+    Root,
+    Log,
+    Assign,
 }
 
 #[derive(Debug, PartialEq)]
@@ -32,5 +39,5 @@ pub enum ID {
 pub enum Greek {
     Alpha,
     Beta,
-    Gamma
+    Gamma,
 }

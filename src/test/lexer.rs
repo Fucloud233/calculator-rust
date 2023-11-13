@@ -8,6 +8,7 @@ lalrpop_mod!(pub calculator);
 fn id_test() {
     // Int test
     assert_eq!(calculator::IntParser::new().parse("22"), Ok(22));
+    assert_eq!(calculator::FloatParser::new().parse("22.22"), Ok(22.22));
 
     // ID test
     let id_map: HashMap<&str, ID> = [
@@ -132,10 +133,10 @@ fn power_test() {
                 },
             ),
             (
-                "2 ^ 3",
+                r"2 ^ {3.2}",
                 Expr::Operation {
                     l: Box::new(Expr::Int(2)),
-                    r: Box::new(Expr::Int(3)),
+                    r: Box::new(Expr::Float(3.2)),
                     opt: Operator::Power,
                 },
             ),
@@ -144,6 +145,14 @@ fn power_test() {
                 Expr::Operation {
                     l: Box::new(Expr::Id(ID::E)),
                     r: Box::new(Expr::Int(2)),
+                    opt: Operator::Power,
+                },
+            ),
+            (
+                r"\exp {2.3}",
+                Expr::Operation {
+                    l: Box::new(Expr::Id(ID::E)),
+                    r: Box::new(Expr::Float(2.3)),
                     opt: Operator::Power,
                 },
             ),

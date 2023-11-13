@@ -47,8 +47,9 @@ SingleInt: i64 = {
     r"[0-9]" => i64::from_str(<>).unwrap()
 }
 
-Float: f64 = {
-    // TODO: float type implement
+pub (crate) Float: f64 = {
+    // simple float type implement
+    r"-?(0|[1-9]\d*)(\.\d+)?" => f64::from_str(<>).unwrap()
 }
 
 pub (crate) Id: ast::ID = {
@@ -66,6 +67,7 @@ pub (crate) Id: ast::ID = {
 
 // 0. Parentheses (we merge value(int/float), id and parentheses)
 Term: Box<ast::Expr> = {
+    Float => Box::new(ast::Expr::Float(<>)),
     Int => Box::new(ast::Expr::Int(<>)),
     Id => Box::new(ast::Expr::Id(<>)),
 
@@ -78,10 +80,12 @@ Term: Box<ast::Expr> = {
 LatexTerm: Box<ast::Expr> = {
     SingleInt => Box::new(ast::Expr::Int(<>)),
     Id => Box::new(ast::Expr::Id(<>)),
+
     LC <expr: Expr> RC => expr
 }
 
-// 1. Exponentiation
+// 1. Exponentiation 
+// NOTICE Now Only Support Float Type Like this: a ^ {3.2} or\exp {3.2} (It can be optimization soon)
 Level1: Box<ast::Expr> = {
     <l: LatexTerm> Supscript <r: LatexTerm> 
         => Box::new(ast::Expr::Operation{l, r, opt: ast::Operator::Power}),
