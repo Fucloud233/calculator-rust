@@ -2,7 +2,7 @@ use crate::ast;
 use std::str::FromStr;
 use lalrpop_util::ErrorRecovery;
 
-// grammar<'err>(errors: &'err mut Vec<ErrorRecovery<usize, Token<'input>, &'static str>>);
+// grammar<'err>(errors: &'err mut Vec<ErrorlRecovery<usize, Token<'input>, &'static str>>);
 grammar;
 
 // ==================== lexer ====================
@@ -87,7 +87,9 @@ Level1: Box<ast::Expr> = {
         => Box::new(ast::Expr::Operation{l, r, opt: ast::Operator::Power}),
 
     // e.g. \exp{(2)}
-    EXP LC LP <r: Expr> RC RP
+    // EXP LC LP <r: Expr> RP RC 
+    // It can be more simple as below
+    EXP <r: LatexTerm>
         => Box::new(ast::Expr::Operation{
             l: Box::new(ast::Expr::Id(ast::ID::E)), 
             r, 
