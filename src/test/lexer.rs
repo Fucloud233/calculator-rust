@@ -177,3 +177,61 @@ fn power_test() {
         .collect(),
     )
 }
+
+#[test]
+fn sqrt_test() {
+    expr_test_runner(
+        [
+            (
+                r"\sqrt 2",
+                Expr::Operation {
+                    l: Box::new(Expr::Float(0.5)),
+                    r: Box::new(Expr::Int(2)),
+                    opt: Operator::Root,
+                },
+            ),
+            (
+                r"\sqrt {2.5}",
+                Expr::Operation {
+                    l: Box::new(Expr::Float(0.5)),
+                    r: Box::new(Expr::Float(2.5)),
+                    opt: Operator::Root,
+                },
+            ),
+            (
+                r"\sqrt {(a)}",
+                Expr::Operation {
+                    l: Box::new(Expr::Float(0.5)),
+                    r: Box::new(Expr::Id(ID::ASCII('a'))),
+                    opt: Operator::Root,
+                },
+            ),
+            (
+                r"\sqrt[a]b",
+                Expr::Operation {
+                    l: Box::new(Expr::Id(ID::ASCII('a'))),
+                    r: Box::new(Expr::Id(ID::ASCII('b'))),
+                    opt: Operator::Root,
+                },
+            ),
+            (
+                r"\sqrt[3]8",
+                Expr::Operation {
+                    l: Box::new(Expr::Int(3)),
+                    r: Box::new(Expr::Int(8)),
+                    opt: Operator::Root,
+                },
+            ),
+            (
+                r"\sqrt[{(a)}]{(b)}",
+                Expr::Operation {
+                    l: Box::new(Expr::Id(ID::ASCII('a'))),
+                    r: Box::new(Expr::Id(ID::ASCII('b'))),
+                    opt: Operator::Root,
+                },
+            ),
+        ]
+        .into_iter()
+        .collect(),
+    )
+}
