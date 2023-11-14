@@ -84,8 +84,11 @@ LatexTerm: Box<ast::Expr> = {
     LC <expr: Expr> RC => expr
 }
 
-// 1. Exponentiation 
-// NOTICE Now Only Support Float Type Like this: a ^ {3.2} or\exp {3.2} (It can be optimization soon)
+// TODO deal with the mixed of calculate belows
+
+// 1. Exponentiation And Root
+// NOTICE Now Only Support Float Type Like this: a ^ {3.2} or \exp {3.2} (It can be optimization soon)
+// NOTICE Nesting of belows are not supported now
 Level1: Box<ast::Expr> = {
     <l: LatexTerm> Supscript <r: LatexTerm> 
         => Box::new(ast::Expr::Operation{l, r, opt: ast::Operator::Power}),
@@ -99,8 +102,27 @@ Level1: Box<ast::Expr> = {
             r, 
             opt: ast::Operator::Power
         }),
+
+    //  \sqrt{}
+    SQRT <r: LatexTerm> 
+        => Box::new(ast::Expr::Operation{
+            l: Box::new(ast::Expr::Float(0.5)), 
+            r, 
+            opt: ast::Operator::Root
+        }),
+
+    // \sqrt[n]{}
+    SQRT LB <l: LatexTerm>  RB <r: LatexTerm> 
+    => Box::new(ast::Expr::Operation{
+        l, 
+        r, 
+        opt: ast::Operator::Root
+    }),
+
+
     Term => <>,
 }
+
 
 // 2. Multiplication and Division
 // TODO: sometimes operator is not needed during multiplication
