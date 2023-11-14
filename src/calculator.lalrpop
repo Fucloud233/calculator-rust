@@ -1,25 +1,118 @@
 use crate::ast;
 use std::str::FromStr;
+use lalrpop_util::ErrorRecovery;
 
+// grammar<'err>(errors: &'err mut Vec<ErrorRecovery<usize, Token<'input>, &'static str>>);
 grammar;
 
-pub Int: i64 = {
-    r"[0-9]+" => i64::from_str(<>).unwrap()
+// ==================== lexer ====================
+
+// use match-use to set the priority of regular expression
+// remember use of _ at the end of else
+// otherwise the following expression won't be matched
+match {
+    r"[0-9]"
+} else {
+    r"-?[1-9][0-9]+|0",
+    _
 }
 
-pub Float: f64 = {
+Subscript = "_";
+Supscript = "^";
+
+LP = "(";
+RP = ")";
+LB = "[";
+RB = "]";
+LC = "{";
+RC = "}";
+
+// latex: excape character
+FRAC = "\\frac";
+EXP = "\\exp";
+SQRT = "\\sqrt";
+LOG = "\\log";
+LN = "\\ln";
+
+PlusOpt: ast::Operator =    { "+" => ast::Operator::Plus}
+SubOpt: ast::Operator =     { "-" => ast::Operator::Sub}
+MulOpt: ast::Operator =     { r"\*|\times" => ast::Operator::Mul}
+DivOpt: ast::Operator =     { r"/|\div" => ast::Operator::Div}
+
+pub (crate) Int: i64 = {
+    r"-?[1-9][0-9]+|0" => i64::from_str(<>).unwrap()
+}
+
+SingleInt: i64 = {
+    r"[0-9]" => i64::from_str(<>).unwrap()
+}
+
+Float: f64 = {
     // TODO: float type implement
 }
 
-pub Id: ast::ID = {
-    r"[a-b]|[x-z]" => ast::ID::ASCII(<>.chars().next().unwrap()),
-    "\\alpha" => ast::ID::Rome(ast::Rome::Alpha),
-    "\\beta" => ast::ID::Rome(ast::Rome::Beta),
-    "\\gamma" => ast::ID::Rome(ast::Rome::Gamma),
+pub (crate) Id: ast::ID = {
+    r"[a-c]|[x-z]" => ast::ID::ASCII(<>.chars().next().unwrap()),
+    "\\alpha" => ast::ID::Greek(ast::Greek::Alpha),
+    "\\beta" => ast::ID::Greek(ast::Greek::Beta),
+    "\\gamma" => ast::ID::Greek(ast::Greek::Gamma),
     "\\pi" => ast::ID::Pi,
     "e" => ast::ID::E,
 }
 
-pub Expr: ast::Expr = {
-    Int => ast::Expr::Int(<>),
-};
+// ==================== parser ====================
+
+// Record the order of operations
+
+// 0. Parentheses (we merge value(int/float), id and parentheses)
+Term: Box<ast::Expr> = {
+    Int => Box::new(ast::Expr::Int(<>)),
+    Id => Box::new(ast::Expr::Id(<>)),
+
+    // you can see that the parser is a loop:
+    // "Expr -> Factor -> level1 -> Term -> Expr"
+    LP <expr: Expr> RP => expr
+}
+
+// this term is designed for latex syntax
+LatexTerm: Box<ast::Expr> = {
+    SingleInt => Box::new(ast::Expr::Int(<>)),
+    Id => Box::new(ast::Expr::Id(<>)),
+    LC <expr: Expr> RC => expr
+}
+
+// 1. Exponentiation
+Level1: Box<ast::Expr> = {
+    <l: LatexTerm> Supscript <r: LatexTerm> 
+        => Box::new(ast::Expr::Operation{l, r, opt: ast::Operator::Power}),
+
+    // e.g. \exp{(2)}
+    EXP LC LP <r: Expr> RC RP
+        => Box::new(ast::Expr::Operation{
+            l: Box::new(ast::Expr::Id(ast::ID::E)), 
+            r, 
+            opt: ast::Operator::Power
+        }),
+    Term => <>,
+}
+
+// 2. Multiplication and Division
+// TODO: sometimes operator is not needed during multiplication
+Factor: Box<ast::Expr> = {
+    <l: Factor> <opt: MulOpt> <r: Level1>
+        => Box::new(ast::Expr::Operation{<>}),
+    <l: Factor> <opt: DivOpt> <r: Level1>
+        => Box::new(ast::Expr::Operation{<>}),
+    FRAC <l: LatexTerm> <r: LatexTerm>
+        => Box::new(ast::Expr::Operation{
+            l, r, opt: ast::Operator::Div
+        }),
+    Level1 => <>,
+}
+
+// 3. Addition and Subtraction
+pub Expr: Box<ast::Expr> = {
+    <l: Expr> <opt: PlusOpt> <r: Factor> => Box::new(ast::Expr::Operation{<>}),
+    <l: Expr> <opt: SubOpt> <r: Factor> => Box::new(ast::Expr::Operation{<>}),
+    Factor => <>,
+}
