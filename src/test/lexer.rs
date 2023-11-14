@@ -235,3 +235,69 @@ fn sqrt_test() {
         .collect(),
     )
 }
+
+#[test]
+fn log_test() {
+    expr_test_runner(
+        [
+            (
+                r"\log 2",
+                Expr::Operation {
+                    l: Box::new(Expr::Int(10)),
+                    r: Box::new(Expr::Int(2)),
+                    opt: Operator::Log,
+                },
+            ),
+            (
+                r"\log {2.5}",
+                Expr::Operation {
+                    l: Box::new(Expr::Int(10)),
+                    r: Box::new(Expr::Float(2.5)),
+                    opt: Operator::Log,
+                },
+            ),
+            (
+                r"\log {(a)}",
+                Expr::Operation {
+                    l: Box::new(Expr::Int(10)),
+                    r: Box::new(Expr::Id(ID::ASCII('a'))),
+                    opt: Operator::Log,
+                },
+            ),
+            (
+                r"\ln 2",
+                Expr::Operation {
+                    l: Box::new(Expr::Id(ID::E)),
+                    r: Box::new(Expr::Int(2)),
+                    opt: Operator::Log,
+                },
+            ),
+            (
+                r"\ln {2.5}",
+                Expr::Operation {
+                    l: Box::new(Expr::Id(ID::E)),
+                    r: Box::new(Expr::Float(2.5)),
+                    opt: Operator::Log,
+                },
+            ),
+            (
+                r"\ln {(a)}",
+                Expr::Operation {
+                    l: Box::new(Expr::Id(ID::E)),
+                    r: Box::new(Expr::Id(ID::ASCII('a'))),
+                    opt: Operator::Log,
+                },
+            ),
+            (
+                r"\log_{(a)}{b}",
+                Expr::Operation {
+                    l: Box::new(Expr::Id(ID::ASCII('a'))),
+                    r: Box::new(Expr::Id(ID::ASCII('b'))),
+                    opt: Operator::Log,
+                },
+            ),
+        ]
+        .into_iter()
+        .collect(),
+    )
+}
