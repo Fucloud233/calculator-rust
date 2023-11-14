@@ -86,7 +86,7 @@ LatexTerm: Box<ast::Expr> = {
 
 // TODO deal with the mixed of calculate belows
 
-// 1. Exponentiation And Root
+// 1. Exponentiation / Root / Log
 // NOTICE Now Only Support Float Type Like this: a ^ {3.2} or \exp {3.2} (It can be optimization soon)
 // NOTICE Nesting of belows are not supported now
 Level1: Box<ast::Expr> = {
@@ -113,12 +113,35 @@ Level1: Box<ast::Expr> = {
 
     // \sqrt[n]{}
     SQRT LB <l: LatexTerm>  RB <r: LatexTerm> 
-    => Box::new(ast::Expr::Operation{
-        l, 
-        r, 
-        opt: ast::Operator::Root
-    }),
+        => Box::new(ast::Expr::Operation{
+            l, 
+            r, 
+            opt: ast::Operator::Root
+        }),
 
+    // \log{}
+    LOG <r: LatexTerm> 
+        => Box::new(ast::Expr::Operation{
+            l: Box::new(ast::Expr::Int(10)), 
+            r, 
+            opt: ast::Operator::Log
+        }),
+
+    // \ln{}
+    LN <r: LatexTerm> 
+        => Box::new(ast::Expr::Operation{
+            l: Box::new(ast::Expr::Id(ast::ID::E)), 
+            r, 
+            opt: ast::Operator::Log
+        }),
+
+    //  \log_n{}
+    LOG Subscript <l: LatexTerm>  <r: LatexTerm> 
+        => Box::new(ast::Expr::Operation{
+            l, 
+            r, 
+            opt: ast::Operator::Log
+        }),
 
     Term => <>,
 }
