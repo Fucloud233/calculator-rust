@@ -17,6 +17,7 @@ match {
     _
 }
 
+ASSIGN = "=";
 Subscript = "_";
 Supscript = "^";
 
@@ -33,6 +34,7 @@ EXP = "\\exp";
 SQRT = "\\sqrt";
 LOG = "\\log";
 LN = "\\ln";
+
 
 PlusOpt: ast::Operator =    { "+" => ast::Operator::Plus}
 SubOpt: ast::Operator =     { "-" => ast::Operator::Sub}
@@ -142,6 +144,15 @@ Level1: Box<ast::Expr> = {
             r, 
             opt: ast::Operator::Log
         }),
+
+    // a = b
+    <l: LatexTerm> ASSIGN <r: LatexTerm> 
+        => Box::new(ast::Expr::Operation{
+            l, 
+            r, 
+            opt: ast::Operator::Assign
+        }),
+
 
     Term => <>,
 }
