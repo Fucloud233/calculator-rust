@@ -2,7 +2,7 @@ use crate::ast;
 use std::str::FromStr;
 use lalrpop_util::ErrorRecovery;
 
-// grammar<'err>(errors: &'err mut Vec<ErrorRecovery<usize, Token<'input>, &'static str>>);
+// grammar<'err>(errors: &'err mut Vec<ErrorlRecovery<usize, Token<'input>, &'static str>>);
 grammar;
 
 // ==================== lexer ====================
@@ -17,6 +17,7 @@ match {
     _
 }
 
+ASSIGN = "=";
 Subscript = "_";
 Supscript = "^";
 
@@ -34,6 +35,7 @@ SQRT = "\\sqrt";
 LOG = "\\log";
 LN = "\\ln";
 
+
 PlusOpt: ast::Operator =    { "+" => ast::Operator::Plus}
 SubOpt: ast::Operator =     { "-" => ast::Operator::Sub}
 MulOpt: ast::Operator =     { r"\*|\times" => ast::Operator::Mul}
@@ -47,8 +49,9 @@ SingleInt: i64 = {
     r"[0-9]" => i64::from_str(<>).unwrap()
 }
 
-Float: f64 = {
-    // TODO: float type implement
+pub (crate) Float: f64 = {
+    // simple float type implement
+    r"-?(0|[1-9]\d*)(\.\d+)?" => f64::from_str(<>).unwrap()
 }
 
 pub (crate) Id: ast::ID = {
@@ -66,6 +69,7 @@ pub (crate) Id: ast::ID = {
 
 // 0. Parentheses (we merge value(int/float), id and parentheses)
 Term: Box<ast::Expr> = {
+    Float => Box::new(ast::Expr::Float(<>)),
     Int => Box::new(ast::Expr::Int(<>)),
     Id => Box::new(ast::Expr::Id(<>)),
 
@@ -78,23 +82,72 @@ Term: Box<ast::Expr> = {
 LatexTerm: Box<ast::Expr> = {
     SingleInt => Box::new(ast::Expr::Int(<>)),
     Id => Box::new(ast::Expr::Id(<>)),
+
     LC <expr: Expr> RC => expr
 }
 
-// 1. Exponentiation
+// TODO deal with the mixed of calculate belows
+
+// 1. Exponentiation / Root / Log
+// NOTICE Now Only Support Float Type Like this: a ^ {3.2} or \exp {3.2} (It can be optimization soon)
+// NOTICE Nesting of belows are not supported now
 Level1: Box<ast::Expr> = {
     <l: LatexTerm> Supscript <r: LatexTerm> 
         => Box::new(ast::Expr::Operation{l, r, opt: ast::Operator::Power}),
 
     // e.g. \exp{(2)}
-    EXP LC LP <r: Expr> RC RP
+    // EXP LC LP <r: Expr> RP RC 
+    // It can be more simple as below
+    EXP <r: LatexTerm>
         => Box::new(ast::Expr::Operation{
             l: Box::new(ast::Expr::Id(ast::ID::E)), 
             r, 
             opt: ast::Operator::Power
         }),
+
+    //  \sqrt{}
+    SQRT <r: LatexTerm> 
+        => Box::new(ast::Expr::Operation{
+            l: Box::new(ast::Expr::Float(0.5)), 
+            r, 
+            opt: ast::Operator::Root
+        }),
+
+    // \sqrt[n]{}
+    SQRT LB <l: LatexTerm>  RB <r: LatexTerm> 
+        => Box::new(ast::Expr::Operation{
+            l, 
+            r, 
+            opt: ast::Operator::Root
+        }),
+
+    // \log{}
+    LOG <r: LatexTerm> 
+        => Box::new(ast::Expr::Operation{
+            l: Box::new(ast::Expr::Int(10)), 
+            r, 
+            opt: ast::Operator::Log
+        }),
+
+    // \ln{}
+    LN <r: LatexTerm> 
+        => Box::new(ast::Expr::Operation{
+            l: Box::new(ast::Expr::Id(ast::ID::E)), 
+            r, 
+            opt: ast::Operator::Log
+        }),
+
+    //  \log_n{}
+    LOG Subscript <l: LatexTerm>  <r: LatexTerm> 
+        => Box::new(ast::Expr::Operation{
+            l, 
+            r, 
+            opt: ast::Operator::Log
+        }),
+
     Term => <>,
 }
+
 
 // 2. Multiplication and Division
 // TODO: sometimes operator is not needed during multiplication
@@ -116,3 +169,13 @@ pub Expr: Box<ast::Expr> = {
     <l: Expr> <opt: SubOpt> <r: Factor> => Box::new(ast::Expr::Operation{<>}),
     Factor => <>,
 }
+
+
+// assign formula is statement rather than expression (like rust)
+// // a = b
+// <l: LatexTerm> ASSIGN <r: LatexTerm> 
+//     => Box::new(ast::Expr::Operation{
+//         l, 
+//         r, 
+//         opt: ast::Operator::Assign
+//     }),
