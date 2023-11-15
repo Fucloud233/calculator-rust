@@ -1,4 +1,4 @@
-use crate::ast::{Expr, Greek, Operator, ID};
+use crate::ast::{Expr, Operator, ID};
 use crate::test::utils::expr_test_runner;
 
 // test power

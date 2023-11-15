@@ -1,5 +1,4 @@
-use crate::ast::{Expr, Greek, Operator, ID};
-use crate::test::utils::expr_test_runner;
+use crate::ast::{Greek, ID};
 
 use lalrpop_util::lalrpop_mod;
 
