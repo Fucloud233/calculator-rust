@@ -145,15 +145,6 @@ Level1: Box<ast::Expr> = {
             opt: ast::Operator::Log
         }),
 
-    // a = b
-    <l: LatexTerm> ASSIGN <r: LatexTerm> 
-        => Box::new(ast::Expr::Operation{
-            l, 
-            r, 
-            opt: ast::Operator::Assign
-        }),
-
-
     Term => <>,
 }
 
@@ -178,3 +169,13 @@ pub Expr: Box<ast::Expr> = {
     <l: Expr> <opt: SubOpt> <r: Factor> => Box::new(ast::Expr::Operation{<>}),
     Factor => <>,
 }
+
+
+// assign formula is statement rather than expression (like rust)
+// // a = b
+// <l: LatexTerm> ASSIGN <r: LatexTerm> 
+//     => Box::new(ast::Expr::Operation{
+//         l, 
+//         r, 
+//         opt: ast::Operator::Assign
+//     }),
