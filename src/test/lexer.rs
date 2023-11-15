@@ -301,3 +301,29 @@ fn log_test() {
         .collect(),
     )
 }
+
+#[test]
+fn assign_test() {
+    expr_test_runner(
+        [
+            (
+                r"a = b",
+                Expr::Operation {
+                    l: Box::new(Expr::Id(ID::ASCII('a'))),
+                    r: Box::new(Expr::Id(ID::ASCII('b'))),
+                    opt: Operator::Assign,
+                },
+            ),
+            (
+                r"{(a)} = {(b)}",
+                Expr::Operation {
+                    l: Box::new(Expr::Id(ID::ASCII('a'))),
+                    r: Box::new(Expr::Id(ID::ASCII('b'))),
+                    opt: Operator::Assign,
+                },
+            ),
+        ]
+        .into_iter()
+        .collect(),
+    )
+}
