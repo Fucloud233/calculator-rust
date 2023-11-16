@@ -1,3 +1,8 @@
+pub enum Line {
+    Expression(Expr),
+    Sentence(ID, Expr)
+}
+
 /* remember it will be same enum in Exp and Opt
  * the former is formula
  * the latter is an operator
