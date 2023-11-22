@@ -1,11 +1,11 @@
 use crate::ast::{Expr, Greek, Operator, ID};
 use lalrpop_util::lalrpop_mod;
 
-lalrpop_mod!(pub calculator);
+lalrpop_mod!(pub parser);
 
 pub fn expr_test_runner(map: Vec<(&str, Expr)>) {
     map.into_iter()
-        .for_each(|(k, v)| assert_eq!(calculator::ExprParser::new().parse(k), Ok(Box::new(v))));
+        .for_each(|(k, v)| assert_eq!(parser::ExprParser::new().parse(k), Ok(Box::new(v))));
 }
 
 
