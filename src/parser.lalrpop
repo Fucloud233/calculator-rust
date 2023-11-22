@@ -179,3 +179,10 @@ pub Expr: Box<ast::Expr> = {
 //         r, 
 //         opt: ast::Operator::Assign
 //     }),
+
+pub Line: ast::Line = {
+    // the type of Expr parsing result is Box
+    // so you should use * to deref it 
+    <id: Id> ASSIGN <expr: Expr> => ast::Line::Sentence(id, *expr),
+    <Expr> => ast::Line::Expression(*<>),
+} 

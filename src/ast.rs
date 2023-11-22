@@ -1,3 +1,4 @@
+#[derive(Debug, PartialEq)]
 pub enum Line {
     Expression(Expr),
     Sentence(ID, Expr)
@@ -8,7 +9,6 @@ pub enum Line {
  * the latter is an operator
  */
 #[derive(Debug, PartialEq)]
-
 pub enum Expr {
     Id(ID),
     Int(i64),
