@@ -7,12 +7,17 @@ mod test {
     mod level1;
     mod expr;
     mod factor;
+
+    mod calculator {
+        mod unit;
+    }
 }
 
 mod calculator;
 
 mod utils {
     pub mod file;
+    pub mod error;
 }
 
 fn main() {
