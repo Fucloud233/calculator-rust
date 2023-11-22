@@ -2,13 +2,13 @@ use crate::ast::{Greek, ID};
 
 use lalrpop_util::lalrpop_mod;
 
-lalrpop_mod!(pub calculator);
+lalrpop_mod!(pub parser);
 
 #[test]
 fn id_test() {
     // Int test
-    assert_eq!(calculator::IntParser::new().parse("22"), Ok(22));
-    assert_eq!(calculator::FloatParser::new().parse("22.22"), Ok(22.22));
+    assert_eq!(parser::IntParser::new().parse("22"), Ok(22));
+    assert_eq!(parser::FloatParser::new().parse("22.22"), Ok(22.22));
 
     // ID test
     let id_map = vec![
@@ -22,7 +22,7 @@ fn id_test() {
 
     id_map
         .into_iter()
-        .for_each(|(k, v)| assert_eq!(calculator::IdParser::new().parse(k), Ok(v)));
+        .for_each(|(k, v)| assert_eq!(parser::IdParser::new().parse(k), Ok(v)));
 }
 
 // #[test]
