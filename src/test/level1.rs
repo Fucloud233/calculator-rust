@@ -17,8 +17,8 @@ fn power_test() {
             (
                 r"2 ^ {3.2}",
                 Expr::Operation {
-                    l: Box::new(Expr::Int(2)),
-                    r: Box::new(Expr::Float(3.2)),
+                    l: Box::new(Expr::Value(2.)),
+                    r: Box::new(Expr::Value(3.2)),
                     opt: Operator::Power,
                 },
             ),
@@ -26,7 +26,7 @@ fn power_test() {
                 r"\exp 2",
                 Expr::Operation {
                     l: Box::new(Expr::Id(ID::E)),
-                    r: Box::new(Expr::Int(2)),
+                    r: Box::new(Expr::Value(2.)),
                     opt: Operator::Power,
                 },
             ),
@@ -34,7 +34,7 @@ fn power_test() {
                 r"\exp {2.3}",
                 Expr::Operation {
                     l: Box::new(Expr::Id(ID::E)),
-                    r: Box::new(Expr::Float(2.3)),
+                    r: Box::new(Expr::Value(2.3)),
                     opt: Operator::Power,
                 },
             ),
@@ -65,23 +65,23 @@ fn sqrt_test() {
             (
                 r"\sqrt 2",
                 Expr::Operation {
-                    l: Box::new(Expr::Float(0.5)),
-                    r: Box::new(Expr::Int(2)),
+                    l: Box::new(Expr::Value(0.5)),
+                    r: Box::new(Expr::Value(2.)),
                     opt: Operator::Root,
                 },
             ),
             (
                 r"\sqrt {2.5}",
                 Expr::Operation {
-                    l: Box::new(Expr::Float(0.5)),
-                    r: Box::new(Expr::Float(2.5)),
+                    l: Box::new(Expr::Value(0.5)),
+                    r: Box::new(Expr::Value(2.5)),
                     opt: Operator::Root,
                 },
             ),
             (
                 r"\sqrt {(a)}",
                 Expr::Operation {
-                    l: Box::new(Expr::Float(0.5)),
+                    l: Box::new(Expr::Value(0.5)),
                     r: Box::new(Expr::Id(ID::ASCII('a'))),
                     opt: Operator::Root,
                 },
@@ -97,8 +97,8 @@ fn sqrt_test() {
             (
                 r"\sqrt[3]8",
                 Expr::Operation {
-                    l: Box::new(Expr::Int(3)),
-                    r: Box::new(Expr::Int(8)),
+                    l: Box::new(Expr::Value(3.)),
+                    r: Box::new(Expr::Value(8.)),
                     opt: Operator::Root,
                 },
             ),
@@ -121,23 +121,23 @@ fn log_test() {
             (
                 r"\log 2",
                 Expr::Operation {
-                    l: Box::new(Expr::Int(10)),
-                    r: Box::new(Expr::Int(2)),
+                    l: Box::new(Expr::Value(10.)),
+                    r: Box::new(Expr::Value(2.)),
                     opt: Operator::Log,
                 },
             ),
             (
                 r"\log {2.5}",
                 Expr::Operation {
-                    l: Box::new(Expr::Int(10)),
-                    r: Box::new(Expr::Float(2.5)),
+                    l: Box::new(Expr::Value(10.)),
+                    r: Box::new(Expr::Value(2.5)),
                     opt: Operator::Log,
                 },
             ),
             (
                 r"\log {(a)}",
                 Expr::Operation {
-                    l: Box::new(Expr::Int(10)),
+                    l: Box::new(Expr::Value(10.)),
                     r: Box::new(Expr::Id(ID::ASCII('a'))),
                     opt: Operator::Log,
                 },
@@ -146,7 +146,7 @@ fn log_test() {
                 r"\ln 2",
                 Expr::Operation {
                     l: Box::new(Expr::Id(ID::E)),
-                    r: Box::new(Expr::Int(2)),
+                    r: Box::new(Expr::Value(2.)),
                     opt: Operator::Log,
                 },
             ),
@@ -154,7 +154,7 @@ fn log_test() {
                 r"\ln {2.5}",
                 Expr::Operation {
                     l: Box::new(Expr::Id(ID::E)),
-                    r: Box::new(Expr::Float(2.5)),
+                    r: Box::new(Expr::Value(2.5)),
                     opt: Operator::Log,
                 },
             ),

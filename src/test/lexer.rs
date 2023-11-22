@@ -7,8 +7,8 @@ lalrpop_mod!(pub parser);
 #[test]
 fn id_test() {
     // Int test
-    assert_eq!(parser::IntParser::new().parse("22"), Ok(22));
-    assert_eq!(parser::FloatParser::new().parse("22.22"), Ok(22.22));
+    assert_eq!(parser::ValueParser::new().parse("22"), Ok(22.));
+    assert_eq!(parser::ValueParser::new().parse("22.22"), Ok(22.22));
 
     // ID test
     let id_map = vec![

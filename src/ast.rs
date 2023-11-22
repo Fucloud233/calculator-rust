@@ -11,8 +11,7 @@ pub enum Line {
 #[derive(Debug, PartialEq)]
 pub enum Expr {
     Id(ID),
-    Int(i64),
-    Float(f64),
+    Value(f64),
     Operation {
         l: Box<Expr>,
         r: Box<Expr>,
@@ -29,7 +28,6 @@ pub enum Operator {
     Power,
     Root,
     Log,
-    Assign,
 }
 
 #[derive(Debug, PartialEq)]

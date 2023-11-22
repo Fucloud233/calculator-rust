@@ -8,13 +8,16 @@ pub fn expr_test_runner(map: Vec<(&str, Expr)>) {
         .for_each(|(k, v)| assert_eq!(parser::ExprParser::new().parse(k), Ok(Box::new(v))));
 }
 
-
 pub fn new_operation(l: Expr, r: Expr, opt: Operator) -> Expr {
     Expr::Operation { 
         l: Box::new(l), 
         r: Box::new(r), 
         opt 
     }
+}
+
+pub fn new_value(c: f64) -> Expr {
+    Expr::Value(c)
 }
 
 pub fn new_greek(c: Greek) -> Expr {
