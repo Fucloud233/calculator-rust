@@ -10,7 +10,6 @@ pub enum Line {
  */
 #[derive(Debug, PartialEq)]
 
-// 操作（Operation，含左右表达式和一个操作符 Operator
 pub enum Expr {
     Id(ID),
     Int(i64),
@@ -44,7 +43,6 @@ pub enum ID {
 
 // Greek alphabet
 #[derive(Debug, PartialEq)]
-// 出了希腊字母,暂时只有α，β，γ
 pub enum Greek {
     Alpha,
     Beta,
