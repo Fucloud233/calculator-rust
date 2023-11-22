@@ -1,4 +1,3 @@
-// 表示一行输入，可以是表达式（Expression）或语句（Sentence，包含一个标识符 ID 和表达式 Expr
 pub enum Line {
     Expression(Expr),
     Sentence(ID, Expr)
