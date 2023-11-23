@@ -5,12 +5,14 @@ use lalrpop_util::lalrpop_mod;
 lalrpop_mod!(pub parser);
 
 #[test]
+// COMMENT:解析器测试：测试解析器是否能正确解析整数（如 "22"）和浮点数（如 "22.22"）
 fn id_test() {
     // Int test
     assert_eq!(parser::IntParser::new().parse("22"), Ok(22));
     assert_eq!(parser::FloatParser::new().parse("22.22"), Ok(22.22));
 
     // ID test
+    // COMMENT:测试不同类型的标识符，包括普通 ASCII 字符（如 'a'），特殊常数（如 'e' 和 'π'），以及希腊字母（如 'α', 'β', 'γ'）。
     let id_map = vec![
         ("a", ID::ASCII('a')),
         ("e", ID::E),

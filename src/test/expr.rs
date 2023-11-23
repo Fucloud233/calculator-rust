@@ -3,6 +3,7 @@ use crate::test::utils::{expr_test_runner, new_operation, new_ascii, new_greek};
 
 // test expr parser
 #[test]
+// COMMENT:测试解析器是否能正确处理简单的数学表达式
 fn expr_test() {
 
     let cases = vec![(
@@ -24,6 +25,7 @@ fn expr_test() {
             Operator::Sub
         )
     ),(
+        // COMMENT:特别测试了希腊字母表达式（例如 "\alpha - \beta"），以确保解析器能处理特殊字符
         "\\alpha - \\beta",
         new_operation(
             new_greek(Greek::Alpha),
@@ -37,6 +39,7 @@ fn expr_test() {
 
 // test order between difference operation
 #[test]
+// COMMENT:测试解析器是否能正确理解和应用操作符的优先级
 fn order_test() {
     let cases = vec![(
         "a + b * c",

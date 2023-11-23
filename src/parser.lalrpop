@@ -10,6 +10,7 @@ grammar;
 // use match-use to set the priority of regular expression
 // remember use of _ at the end of else
 // otherwise the following expression won't be matched
+// COMMENT:匹配单个数字和整数
 match {
     r"[0-9]"
 } else {
@@ -35,12 +36,13 @@ SQRT = "\\sqrt";
 LOG = "\\log";
 LN = "\\ln";
 
-
+// COMMENT:运算符解析规则,支持latex符号
 PlusOpt: ast::Operator =    { "+" => ast::Operator::Plus}
 SubOpt: ast::Operator =     { "-" => ast::Operator::Sub}
 MulOpt: ast::Operator =     { r"\*|\times" => ast::Operator::Mul}
 DivOpt: ast::Operator =     { r"/|\div" => ast::Operator::Div}
 
+// COMMENT：数据类型解析规则
 pub (crate) Int: i64 = {
     r"-?[1-9][0-9]+|0" => i64::from_str(<>).unwrap()
 }
@@ -54,6 +56,8 @@ pub (crate) Float: f64 = {
     r"-?(0|[1-9]\d*)(\.\d+)?" => f64::from_str(<>).unwrap()
 }
 
+
+//COMMENT:特殊符号（如括号、指数符号）
 pub (crate) Id: ast::ID = {
     r"[a-c]|[x-z]" => ast::ID::ASCII(<>.chars().next().unwrap()),
     "\\alpha" => ast::ID::Greek(ast::Greek::Alpha),
@@ -67,6 +71,7 @@ pub (crate) Id: ast::ID = {
 
 // Record the order of operations
 
+// COMMENT：表达式解析规则:定义了数学表达式的结构和优先级，如 Term 和 LatexTerm 分别处理普通和 LaTeX 语法的术语
 // 0. Parentheses (we merge value(int/float), id and parentheses)
 Term: Box<ast::Expr> = {
     Float => Box::new(ast::Expr::Float(<>)),
@@ -88,6 +93,7 @@ LatexTerm: Box<ast::Expr> = {
 
 // TODO deal with the mixed of calculate belows
 
+// COMMENT：特殊语法处理,例如，EXP, SQRT, LOG, LN 分别处理指数、根号、对数运算的 LaTeX 表达式。
 // 1. Exponentiation / Root / Log
 // NOTICE Now Only Support Float Type Like this: a ^ {3.2} or \exp {3.2} (It can be optimization soon)
 // NOTICE Nesting of belows are not supported now

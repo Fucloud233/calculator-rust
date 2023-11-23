@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use crate::utils::file;
 use crate::ast::{ID, Expr, Line};
 
+// TODO: 我自己需要完成的部分，在这里来实现符号表,并且完善相关函数
+// COMMENT:结构定义 (Calculator):包含一个符号表 symbol_table，用于存储变量名（ID）和它们的值（f64）
 struct Calculator {
     symbol_table: HashMap<ID, f64>
 }
@@ -23,6 +25,7 @@ impl Calculator {
 
     /* --------------- calculator --------------- */
 
+    // COMMENT:接受一个字符串（表达式）并尝试计算其结果。它首先解析表达式，然后处理表达式。
     // return error type to be determined
     pub fn calculate_expr(&mut self, line: &str) -> Result<f64, ()> {
         self.before_calculate();
@@ -37,6 +40,7 @@ impl Calculator {
         }
     }
 
+    // COMMENT: 多行表达式，这里可以读入文件
     pub fn calculate_file(&mut self, file_path: &str) -> Result<Vec<f64>, ()> {
         // init the status
         self.before_calculate();
@@ -84,6 +88,7 @@ impl Calculator {
 
 /* --------------- parser --------------- */
 
+// TODO：封装 LALRPOP 解析器接口，用于将输入行解析为 Line 枚举
 // encapsulate the lalrpop interface
 fn parse_line(line: &str) -> Result<Line, ()> {
 
