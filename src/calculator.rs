@@ -137,7 +137,9 @@ impl Calculator {
         id: &ID,
         expr: &Expr,
     ) -> Result<(), CalculatorError<'input>> {
-        todo!()
+        let id_value = self.handle_expression(expr)?;
+        self.symbol_table.insert(*id, id_value);
+        Ok(())
     }
 }
 
