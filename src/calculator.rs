@@ -1,22 +1,22 @@
 use std::collections::HashMap;
 
-use lalrpop_util::lalrpop_mod;
-
+use crate::ast::{Expr, Line, Operator, ID};
 use crate::utils::error::CalculatorError;
-use crate::ast::{ID, Expr, Line};
-
+use lalrpop_util::lalrpop_mod;
+use std::f64;
 struct Calculator {
-    symbol_table: HashMap<ID, f64>
+    symbol_table: HashMap<ID, f64>,
 }
 
 // type ParseError = lalrpop_util::ParseError<usize, Token<'_>, &str>;
 
 impl Calculator {
-
     /* --------------- init --------------- */
 
     pub fn new() -> Self {
-        Calculator { symbol_table: HashMap::new() }
+        Calculator {
+            symbol_table: HashMap::new(),
+        }
     }
 
     fn before_calculate(&mut self) {
@@ -24,13 +24,15 @@ impl Calculator {
         self.symbol_table.clear();
     }
 
-
     /* --------------- calculator --------------- */
 
     // return error type to be determined
-    pub fn calculate_expr<'input>(&mut self, line: &'input str) -> Result<f64, CalculatorError<'input>> {
+    pub fn calculate_expr<'input>(
+        &mut self,
+        line: &'input str,
+    ) -> Result<f64, CalculatorError<'input>> {
         self.before_calculate();
-        
+
         let parser_result = parse_line(line)?;
 
         if let Line::Expression(expr) = parser_result {
@@ -43,11 +45,14 @@ impl Calculator {
 
     // [Notice] reading and calculating must be decoupled
     // otherwise it will cause lifetime error
-    pub fn calculate_file<'input>(&mut self, lines: Vec<&'input str>) -> Result<Vec<f64>, CalculatorError<'input>> {
+    pub fn calculate_file<'input>(
+        &mut self,
+        lines: Vec<&'input str>,
+    ) -> Result<Vec<f64>, CalculatorError<'input>> {
         // init the status
         self.before_calculate();
 
-        // using result array 
+        // using result array
         // to decouple computation and output
         let mut results: Vec<f64> = Vec::new();
         for line in lines {
@@ -58,23 +63,80 @@ impl Calculator {
                 Line::Expression(expr) => {
                     let value = self.handle_expression(&expr)?;
                     results.push(value);
-                },
-                Line::Sentence(id, expr) => self.handle_sentence(&id, &expr)?
+                }
+                Line::Sentence(id, expr) => self.handle_sentence(&id, &expr)?,
             }
-        };
+        }
 
         Ok(results)
     }
 
     /* --------------- handler --------------- */
-
-    // TODO: expression will return value
     fn handle_expression<'input>(&mut self, expr: &Expr) -> Result<f64, CalculatorError<'input>> {
-        todo!()
+        match expr {
+            Expr::Id(id) => {
+                if let Some(value) = self.symbol_table.get(id) {
+                    Ok(*value)
+                } else {
+                    Err(CalculatorError::UndefinedIdError("Undefined Symbol"))
+                }
+            }
+            Expr::Value(value) => Ok(*value),
+            Expr::Operation { l, r, opt } => {
+                let left = self.handle_expression(l)?;
+                let right = self.handle_expression(r)?;
+
+                // TODO deal with overflow error
+                match opt {
+                    Operator::Plus => Ok(left + right),
+                    Operator::Sub => Ok(left - right),
+                    Operator::Mul => Ok(left * right),
+                    Operator::Div => {
+                        if right == 0.0 {
+                            Err(CalculatorError::ArithmeticError("Division by zero"))
+                        } else {
+                            Ok(left / right)
+                        }
+                    }
+                    Operator::Power => Ok(left.powf(right)),
+                    Operator::Root => {
+                        if right == 0.0 {
+                            Err(CalculatorError::ArithmeticError("Root with zero index"))
+                        } else if right < 0.0 {
+                            Err(CalculatorError::ArithmeticError("Root with negative index"))
+                        } else if left < 0.0 && right % 2.0 == 0.0 {
+                            Err(CalculatorError::ArithmeticError(
+                                "Odd root of a negative number",
+                            ))
+                        } else {
+                            Ok(left.powf(right.recip()))
+                        }
+                    }
+                    Operator::Log => {
+                        if left <= 0.0 || right <= 0.0 {
+                            Err(CalculatorError::ArithmeticError(
+                                "Log with zero base or zero argument",
+                            ))
+                        // NOTE can't use match on float type!
+                        // NOTE use log2 and log10 to get more precise result, maybe use other crates future
+                        } else if left == 2.0 {
+                            Ok(right.log2())
+                        } else if left == 10.0 {
+                            Ok(right.log10())
+                        } else {
+                            Ok(right.log(left))
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    // TODO: sentence won't return value
-    fn handle_sentence<'input>(&mut self, id: &ID, expr: &Expr) -> Result<(), CalculatorError<'input>> {
+    fn handle_sentence<'input>(
+        &mut self,
+        id: &ID,
+        expr: &Expr,
+    ) -> Result<(), CalculatorError<'input>> {
         todo!()
     }
 }
@@ -86,7 +148,7 @@ lalrpop_mod!(pub parser);
 // encapsulate the lalrpop interface
 fn parse_line(line: &str) -> Result<Line, CalculatorError> {
     match parser::LineParser::new().parse(line) {
-        Ok(r) => Ok(r), 
-        Err(e) => return Err(CalculatorError::ParseError(e))
+        Ok(r) => Ok(r),
+        Err(e) => return Err(CalculatorError::ParseError(e)),
     }
 }

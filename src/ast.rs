@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq)]
 pub enum Line {
     Expression(Expr),
-    Sentence(ID, Expr)
+    Sentence(ID, Expr),
 }
 
 /* remember it will be same enum in Exp and Opt
@@ -30,7 +30,7 @@ pub enum Operator {
     Log,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum ID {
     ASCII(char),
     Greek(Greek),
@@ -39,7 +39,7 @@ pub enum ID {
 }
 
 // Greek alphabet
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum Greek {
     Alpha,
     Beta,
