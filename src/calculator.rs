@@ -22,6 +22,9 @@ impl Calculator {
     fn before_calculate(&mut self) {
         // you must clear the symbol table before clear
         self.symbol_table.clear();
+        // insert E and Pi before_calculate
+        self.symbol_table.insert(ID::E, f64::consts::E);
+        self.symbol_table.insert(ID::Pi, f64::consts::PI);
     }
 
     /* --------------- calculator --------------- */
