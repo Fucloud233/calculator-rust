@@ -1,11 +1,15 @@
 use std::collections::HashMap;
 
-use crate::utils::file;
+use lalrpop_util::lalrpop_mod;
+
+use crate::utils::error::CalculatorError;
 use crate::ast::{ID, Expr, Line};
 
 struct Calculator {
     symbol_table: HashMap<ID, f64>
 }
+
+// type ParseError = lalrpop_util::ParseError<usize, Token<'_>, &str>;
 
 impl Calculator {
 
@@ -24,7 +28,7 @@ impl Calculator {
     /* --------------- calculator --------------- */
 
     // return error type to be determined
-    pub fn calculate_expr(&mut self, line: &str) -> Result<f64, ()> {
+    pub fn calculate_expr<'input>(&mut self, line: &'input str) -> Result<f64, CalculatorError<'input>> {
         self.before_calculate();
         
         let parser_result = parse_line(line)?;
@@ -33,22 +37,15 @@ impl Calculator {
             self.handle_expression(&expr)
         } else {
             // an error will occur when parsing sentence
-            Err(())
+            todo!()
         }
     }
 
-    pub fn calculate_file(&mut self, file_path: &str) -> Result<Vec<f64>, ()> {
+    // [Notice] reading and calculating must be decoupled
+    // otherwise it will cause lifetime error
+    pub fn calculate_file<'input>(&mut self, lines: Vec<&'input str>) -> Result<Vec<f64>, CalculatorError<'input>> {
         // init the status
         self.before_calculate();
-
-        let lines = match file::read_lines(file_path) {
-            Ok(l) => l,
-            Err(_) => {
-                // TODO: you may need to define custom error
-                // rather than io error
-                return Err(())
-            }
-        };
 
         // using result array 
         // to decouple computation and output
@@ -72,20 +69,24 @@ impl Calculator {
     /* --------------- handler --------------- */
 
     // TODO: expression will return value
-    fn handle_expression(&mut self, expr: &Expr) -> Result<f64, ()> {
+    fn handle_expression<'input>(&mut self, expr: &Expr) -> Result<f64, CalculatorError<'input>> {
         todo!()
     }
 
     // TODO: sentence won't return value
-    fn handle_sentence(&mut self, id: &ID, expr: &Expr) -> Result<(), ()> {
+    fn handle_sentence<'input>(&mut self, id: &ID, expr: &Expr) -> Result<(), CalculatorError<'input>> {
         todo!()
     }
 }
 
 /* --------------- parser --------------- */
 
-// encapsulate the lalrpop interface
-fn parse_line(line: &str) -> Result<Line, ()> {
+lalrpop_mod!(pub parser);
 
-    todo!()
+// encapsulate the lalrpop interface
+fn parse_line(line: &str) -> Result<Line, CalculatorError> {
+    match parser::LineParser::new().parse(line) {
+        Ok(r) => Ok(r), 
+        Err(e) => return Err(CalculatorError::ParseError(e))
+    }
 }
