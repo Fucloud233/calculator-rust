@@ -31,3 +31,69 @@ fn test_handle_sentence() {
         .into_iter()
         .for_each(|(id, expr)| assert_eq!(test_cal.handle_sentence(&id, &expr), Ok(())))
 }
+
+#[test]
+fn test_handle_expression() {
+    let mut test_cal = Calculator::new();
+    // insert a and b into symbol table
+    let _ = test_cal.handle_sentence(&ID::ASCII('a'), &new_value(1.0));
+    let _ = test_cal.handle_sentence(
+        &ID::ASCII('b'),
+        &new_operation(new_value(1.0), new_value(2.0), Operator::Plus),
+    );
+
+    let cases = vec![
+        (
+            new_operation(new_value(1.0), new_value(2.0), Operator::Plus),
+            3.0,
+        ),
+        (
+            new_operation(new_ascii('a'), new_value(2.0), Operator::Plus),
+            3.0,
+        ),
+        (
+            new_operation(new_ascii('a'), new_ascii('b'), Operator::Plus),
+            4.0,
+        ),
+        (
+            new_operation(new_value(1.0), new_value(2.0), Operator::Sub),
+            -1.0,
+        ),
+        (
+            new_operation(new_value(1.0), new_value(2.0), Operator::Mul),
+            2.0,
+        ),
+        (
+            new_operation(new_value(1.0), new_value(2.0), Operator::Div),
+            0.5,
+        ),
+        (
+            new_operation(new_value(2.0), new_value(2.0), Operator::Power),
+            4.0,
+        ),
+        (
+            new_operation(Expr::Id(ID::E), new_value(1.0), Operator::Power),
+            f64::consts::E,
+        ),
+        (
+            new_operation(Expr::Id(ID::E), new_value(-1.0), Operator::Power),
+            f64::consts::E.recip(),
+        ),
+        (
+            new_operation(new_value(8.0), new_value(3.0), Operator::Root),
+            2.0,
+        ),
+        (
+            new_operation(new_value(2.0), new_value(8.0), Operator::Log),
+            3.0,
+        ),
+        (
+            new_operation(Expr::Id(ID::E), Expr::Id(ID::E), Operator::Log),
+            1.0,
+        ),
+    ];
+
+    cases
+        .into_iter()
+        .for_each(|(k, v)| assert_eq!(test_cal.handle_expression(&k), Ok(v)))
+}
