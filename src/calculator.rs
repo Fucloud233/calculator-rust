@@ -117,7 +117,7 @@ impl Calculator {
                         "Odd root of a negative number",
                     ))
                 } else {
-                    Ok(left.powf(right.recip()))
+                    Ok(right.powf(left.recip()))
                 }
             }
             Operator::Log => {
