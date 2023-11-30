@@ -4,7 +4,7 @@ use crate::ast::{Expr, Line, Operator, ID};
 use crate::utils::error::CalculatorError;
 use lalrpop_util::lalrpop_mod;
 use std::f64;
-struct Calculator {
+pub struct Calculator {
     symbol_table: HashMap<ID, f64>,
 }
 
@@ -22,13 +22,9 @@ impl Calculator {
     fn before_calculate(&mut self) {
         // you must clear the symbol table before clear
         self.symbol_table.clear();
-        // insert E and Pi before_calculate
-        self.symbol_table.insert(ID::E, f64::consts::E);
-        self.symbol_table.insert(ID::Pi, f64::consts::PI);
     }
 
     /* --------------- calculator --------------- */
-
     // return error type to be determined
     pub fn calculate_expr<'input>(
         &mut self,
@@ -75,15 +71,22 @@ impl Calculator {
     }
 
     /* --------------- handler --------------- */
-    fn handle_expression<'input>(&mut self, expr: &Expr) -> Result<f64, CalculatorError<'input>> {
+    pub(crate) fn handle_expression<'input>(
+        &mut self,
+        expr: &Expr,
+    ) -> Result<f64, CalculatorError<'input>> {
         match expr {
-            Expr::Id(id) => {
-                if let Some(value) = self.symbol_table.get(id) {
-                    Ok(*value)
-                } else {
-                    Err(CalculatorError::UndefinedIdError("Undefined Symbol"))
+            Expr::Id(id) => match id {
+                ID::E => Ok(f64::consts::E),
+                ID::Pi => Ok(f64::consts::PI),
+                _ => {
+                    if let Some(value) = self.symbol_table.get(id) {
+                        Ok(*value)
+                    } else {
+                        Err(CalculatorError::UndefinedIdError(*id))
+                    }
                 }
-            }
+            },
             Expr::Value(value) => Ok(*value),
             Expr::Operation { l, r, opt } => {
                 let left = self.handle_expression(l)?;
@@ -121,9 +124,11 @@ impl Calculator {
                                 "Log with zero base or zero argument",
                             ))
                         // NOTE can't use match on float type!
-                        // NOTE use log2 and log10 to get more precise result, maybe use other crates future
+                        // NOTE use log2 ,ln and log10 to get more precise result, maybe use other crates future
                         } else if left == 2.0 {
                             Ok(right.log2())
+                        } else if left == f64::consts::E {
+                            Ok(right.ln())
                         } else if left == 10.0 {
                             Ok(right.log10())
                         } else {
@@ -135,7 +140,7 @@ impl Calculator {
         }
     }
 
-    fn handle_sentence<'input>(
+    pub(crate) fn handle_sentence<'input>(
         &mut self,
         id: &ID,
         expr: &Expr,
