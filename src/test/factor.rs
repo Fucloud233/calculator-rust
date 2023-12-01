@@ -1,5 +1,5 @@
 use crate::ast::{Expr, Greek, Operator, ID};
-use crate::test::utils::expr_test_runner;
+use crate::test::utils::{expr_test_runner, new_arithmetic};
 
 
 // test factor parser
@@ -23,6 +23,7 @@ fn factor_test() {
                     opt: Operator::Div,
                 },
             ),
+            ("\\frac12", new_arithmetic(1., 2., Operator::Div))
         ]
     )
 }

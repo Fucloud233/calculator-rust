@@ -1,6 +1,8 @@
 use crate::ast::{Expr, Operator, ID};
 use crate::test::utils::expr_test_runner;
 
+use super::utils::new_arithmetic;
+
 // test power
 #[test]
 fn power_test() {
@@ -174,6 +176,7 @@ fn log_test() {
                     opt: Operator::Log,
                 },
             ),
+            ( "\\log_28", new_arithmetic(2., 8., Operator::Log))
         ]
     )
 }
