@@ -80,7 +80,7 @@ fn test_handle_expression() {
             f64::consts::E.recip(),
         ),
         (
-            new_operation(new_value(8.0), new_value(3.0), Operator::Root),
+            new_operation(new_value(3.0), new_value(8.0), Operator::Root),
             2.0,
         ),
         (
