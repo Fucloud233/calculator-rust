@@ -21,6 +21,14 @@ pub fn new_operation(l: Expr, r: Expr, opt: Operator) -> Expr {
     }
 }
 
+pub fn new_arithmetic(l: f64, r: f64, opt: Operator) -> Expr {
+    Expr::Operation { 
+        l: Expr::new_value(l),
+        r: Expr::new_value(r),
+        opt
+    }
+}
+
 pub fn new_value(c: f64) -> Expr {
     Expr::Value(c)
 }

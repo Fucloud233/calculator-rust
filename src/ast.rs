@@ -19,6 +19,16 @@ pub enum Expr {
     },
 }
 
+impl Expr {
+    pub fn new_value(value: f64) -> Box<Expr>{
+        Box::new(Expr::Value(value))
+    } 
+
+    pub fn new_operation(l: Box<Expr>, r: Box<Expr>, opt: Operator) -> Box<Expr> {
+        Box::new(Expr::Operation { l, r, opt})
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum Operator {
     Plus,
