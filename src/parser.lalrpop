@@ -1,5 +1,5 @@
 use crate::ast;
-use std::str::FromStr;
+use std::str::{FromStr, Chars};
 use lalrpop_util::ErrorRecovery;
 
 // grammar<'err>(errors: &'err mut Vec<ErrorlRecovery<usize, Token<'input>, &'static str>>);
@@ -10,11 +10,13 @@ grammar;
 // use match-use to set the priority of regular expression
 // remember use of _ at the end of else
 // otherwise the following expression won't be matched
+
 match {
+    r"\d\d" => DUAL_VALUE,
     r"[0-9]"
 } else {
-    r"-?(0|[1-9]\d*)(\.\d+)?",
-    _
+    r"-?(0|[1-9]\d*)(\.\d+)?" => VALUE,
+    _ 
 }
 
 ASSIGN = "=";
@@ -48,7 +50,9 @@ SingleNumber: f64 = {
 // [deprecated] merge int and float into value
 pub (crate) Value: f64 = {
     // simple float type implement
-    r"-?(0|[1-9]\d*)(\.\d+)?" => f64::from_str(<>).unwrap()
+    // r"[1-9][1-9][0-9]*" => f64::from_str(<>).unwrap(),
+    <VALUE> => f64::from_str(<>).unwrap(),
+    <DUAL_VALUE> => f64::from_str(<>).unwrap(),
 }
 
 pub (crate) Id: ast::ID = {
@@ -80,6 +84,27 @@ LatexTerm: Box<ast::Expr> = {
     Id => Box::new(ast::Expr::Id(<>)),
 
     LC <expr: Expr> RC => expr
+}
+
+LatexDualValue: (Box<ast::Expr>, Box<ast::Expr>) = {
+    <value: DUAL_VALUE> => {
+        let next_digit = |chars: &mut Chars| 
+            chars.next().unwrap().to_digit(10).unwrap() as f64;
+
+        let mut chars = value.chars();
+        let base = next_digit(&mut chars);
+        let argument = next_digit(&mut chars);
+        ( ast::Expr::new_value(base), ast::Expr::new_value(argument) )
+    }
+}
+
+LogPrefix: Box<ast::Expr> = {
+    // log = log_10 
+    LOG => Box::new(ast::Expr::Value(10.)),
+    // ln = log_e
+    LN =>Box::new(ast::Expr::Id(ast::ID::E)),
+    // log_n
+    LOG Subscript <l: LatexTerm> => <>,
 }
 
 // TODO deal with the mixed of calculate belows
@@ -119,26 +144,17 @@ Level1: Box<ast::Expr> = {
         }),
 
     // \log{}
-    LOG <r: LatexTerm> 
+    <l: LogPrefix> <r: LatexTerm> 
         => Box::new(ast::Expr::Operation{
-            l: Box::new(ast::Expr::Value(10.)), 
-            r, 
-            opt: ast::Operator::Log
+            l, r, opt: ast::Operator::Log
         }),
 
-    // \ln{}
-    LN <r: LatexTerm> 
-        => Box::new(ast::Expr::Operation{
-            l: Box::new(ast::Expr::Id(ast::ID::E)), 
-            r, 
-            opt: ast::Operator::Log
-        }),
-
-    //  \log_n{}
-    LOG Subscript <l: LatexTerm>  <r: LatexTerm> 
-        => Box::new(ast::Expr::Operation{
-            l, 
-            r, 
+    // \log_nm
+    // handle specific form such log_28->log_2{8}
+    LOG Subscript <dual_value: LatexDualValue> => 
+        Box::new(ast::Expr::Operation{
+            l: dual_value.0,
+            r: dual_value.1,
             opt: ast::Operator::Log
         }),
 
@@ -156,6 +172,13 @@ Factor: Box<ast::Expr> = {
     FRAC <l: LatexTerm> <r: LatexTerm>
         => Box::new(ast::Expr::Operation{
             l, r, opt: ast::Operator::Div
+        }),
+
+    FRAC <dual_value: LatexDualValue> => 
+        Box::new(ast::Expr::Operation{
+            l: dual_value.0,
+            r: dual_value.1,
+            opt: ast::Operator::Div
         }),
     Level1 => <>,
 }
