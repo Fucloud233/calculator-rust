@@ -1,12 +1,13 @@
 use std::collections::HashMap;
+use std::f64;
 
 use lalrpop_util::lalrpop_mod;
 
+use crate::ast::{Expr, Line, Operator, ID};
 use crate::utils::error::CalculatorError;
-use crate::ast::{ID, Expr, Line};
 
-struct Calculator {
-    symbol_table: HashMap<ID, f64>
+pub struct Calculator {
+    symbol_table: HashMap<ID, f64>,
 }
 
 // type ParseError = lalrpop_util::ParseError<usize, Token<'_>, &str>;
@@ -61,21 +62,95 @@ impl Calculator {
                 },
                 Line::Sentence(id, expr) => self.handle_sentence(&id, &expr)?
             }
-        };
+        }
 
         Ok(results)
     }
 
     /* --------------- handler --------------- */
-
-    // TODO: expression will return value
-    fn handle_expression<'input>(&mut self, expr: &Expr) -> Result<f64, CalculatorError<'input>> {
-        todo!()
+    pub(crate) fn handle_expression<'input>(
+        &mut self,
+        expr: &Expr,
+    ) -> Result<f64, CalculatorError<'input>> {
+        match expr {
+            Expr::Id(id) => match id {
+                ID::E => Ok(f64::consts::E),
+                ID::Pi => Ok(f64::consts::PI),
+                _ => {
+                    if let Some(value) = self.symbol_table.get(id) {
+                        Ok(*value)
+                    } else {
+                        Err(CalculatorError::UndefinedIdError(*id))
+                    }
+                }
+            },
+            Expr::Value(value) => Ok(*value),
+            Expr::Operation { l, r, opt } => self.handle_operation(l, r, opt),
+        }
     }
 
-    // TODO: sentence won't return value
-    fn handle_sentence<'input>(&mut self, id: &ID, expr: &Expr) -> Result<(), CalculatorError<'input>> {
-        todo!()
+    #[inline]
+    fn handle_operation<'input>(&mut self, l: &Expr, r: &Expr, opt: &Operator) -> Result<f64, CalculatorError<'input>> {
+        let left = self.handle_expression(l)?;
+        let right = self.handle_expression(r)?;
+
+        // TODO deal with overflow error
+        match opt {
+            Operator::Plus => Ok(left + right),
+            Operator::Sub => Ok(left - right),
+            Operator::Mul => Ok(left * right),
+            Operator::Div => {
+                if right == 0.0 {
+                    Err(CalculatorError::ArithmeticError("Division by zero"))
+                } else {
+                    Ok(left / right)
+                }
+            }
+            Operator::Power => Ok(left.powf(right)),
+            Operator::Root => {
+                if right == 0.0 {
+                    Err(CalculatorError::ArithmeticError("Root with zero index"))
+                } else if right < 0.0 {
+                    Err(CalculatorError::ArithmeticError("Root with negative index"))
+                } else if left < 0.0 && right % 2.0 == 0.0 {
+                    Err(CalculatorError::ArithmeticError(
+                        "Odd root of a negative number",
+                    ))
+                } else {
+                    Ok(right.powf(left.recip()))
+                }
+            }
+            Operator::Log => {
+                if left <= 0.0 || right <= 0.0 {
+                    return Err(CalculatorError::ArithmeticError(
+                        "Log with zero base or zero argument",
+                    ))
+                } 
+
+                // NOTE can't use match on float type!
+                // NOTE use log2 ,ln and log10 to get more precise result, maybe use other crates future
+                Ok(if left == 2.0 {
+                    right.log2()
+                } else if left == f64::consts::E {
+                    right.ln()
+                } else if left == 10.0 {
+                    right.log10()
+                } else {
+                    right.log(left)
+                })
+            }
+        }
+    }
+
+
+    pub(crate) fn handle_sentence<'input>(
+        &mut self,
+        id: &ID,
+        expr: &Expr,
+    ) -> Result<(), CalculatorError<'input>> {
+        let id_value = self.handle_expression(expr)?;
+        self.symbol_table.insert(*id, id_value);
+        Ok(())
     }
 }
 
@@ -86,7 +161,7 @@ lalrpop_mod!(pub parser);
 // encapsulate the lalrpop interface
 fn parse_line(line: &str) -> Result<Line, CalculatorError> {
     match parser::LineParser::new().parse(line) {
-        Ok(r) => Ok(r), 
-        Err(e) => return Err(CalculatorError::ParseError(e))
+        Ok(r) => Ok(r),
+        Err(e) => return Err(CalculatorError::ParseError(e)),
     }
 }
