@@ -33,6 +33,24 @@ fn test_handle_sentence() {
 }
 
 #[test]
+fn test_calculate_expression() {
+    let cases = vec![
+        // FIXME: "1-2" can be parsed
+        ("1+2", 3.), ("1 - 2", -1.), ("1*2", 2.), ("1/2", 0.5), 
+        ("2^2", 4.), ("e^1", f64::consts::E), ("e^{-1}", f64::consts::E.recip()),
+        ("\\sqrt[3]8", 2.), ("\\log_2 8", 3.), ("\\ln e", 1.)
+    ];
+
+    let mut calculator = Calculator::new();
+    cases.iter().for_each(|(line, value)| {
+        match calculator.calculate_expr(line) {
+            Ok(r) => assert_eq!(r, *value),
+            Err(e) => {eprintln!("{}:\n{:#?}", line, e); assert!(false)}
+        };
+    })
+}
+
+#[test]
 fn test_handle_expression() {
     let mut test_cal = Calculator::new();
     // insert a and b into symbol table
@@ -80,7 +98,7 @@ fn test_handle_expression() {
             f64::consts::E.recip(),
         ),
         (
-            new_operation(new_value(8.0), new_value(3.0), Operator::Root),
+            new_operation(new_value(3.0), new_value(8.0), Operator::Root),
             2.0,
         ),
         (
