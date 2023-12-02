@@ -1,11 +1,14 @@
 use crate::ast::{Greek, Operator};
-use crate::test::utils::{expr_test_runner, new_operation, new_ascii, new_greek};
+use crate::test::utils::{expr_test_runner, new_operation, new_arithmetic, new_ascii, new_greek};
 
 // test expr parser
 #[test]
 fn expr_test() {
 
-    let cases = vec![(
+    let cases = vec![
+    ("12+23", new_arithmetic(12., 23., Operator::Plus)),
+    ("12-23", new_arithmetic(12., 23., Operator::Sub)),
+    (
         "a + b",
         new_operation(
             new_ascii('a'),
