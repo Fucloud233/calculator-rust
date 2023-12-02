@@ -95,6 +95,15 @@ LatexDualValue: (Box<ast::Expr>, Box<ast::Expr>) = {
         let base = next_digit(&mut chars);
         let argument = next_digit(&mut chars);
         ( ast::Expr::new_value(base), ast::Expr::new_value(argument) )
+    },
+
+    // MULTI_VALUE
+   <value: VALUE> => {
+        let mut chars = value.chars();
+
+        let base = chars.next().unwrap().to_digit(10).unwrap() as f64;
+        let argument = chars.collect::<String>().parse::<f64>().unwrap();
+        ( ast::Expr::new_value(base), ast::Expr::new_value(argument) )
     }
 }
 
@@ -173,7 +182,7 @@ Factor: Box<ast::Expr> = {
         => Box::new(ast::Expr::Operation{
             l, r, opt: ast::Operator::Div
         }),
-
+    // FIXME here will parse error
     FRAC <dual_value: LatexDualValue> => 
         Box::new(ast::Expr::Operation{
             l: dual_value.0,
