@@ -103,7 +103,8 @@ impl Calculator {
         operand: &Expr,
         opt: &UnaryOperator,
     ) -> Result<f64, CalculatorError<'input>> {
-        let included = |num: f64| {
+        // Avoid floating point errors introduced by rounding
+        let rounding = |num: f64| {
             if (num - num.round()).abs() < 1e-10 {
                 num.round()
             } else {
@@ -111,13 +112,14 @@ impl Calculator {
             }
         };
 
-        let operand_ = self.handle_expression(operand)?;
+        let operand_value = self.handle_expression(operand)?;
         match opt {
             // NOTE optimize: float can be factorial by gamma function
-            UnaryOperator::Factorial => Ok(factorial::factorial(operand_ as u64)),
-            UnaryOperator::Sin => Ok(included(operand_.sin())),
-            UnaryOperator::Cos => Ok(included(operand_.cos())),
-            UnaryOperator::Tan => Ok(included(operand_.tan())),
+            UnaryOperator::Minus => Ok(-operand_value),
+            UnaryOperator::Factorial => Ok(factorial::factorial(operand_value as u64)),
+            UnaryOperator::Sin => Ok(rounding(operand_value.sin())),
+            UnaryOperator::Cos => Ok(rounding(operand_value.cos())),
+            UnaryOperator::Tan => Ok(rounding(operand_value.tan())),
         }
     }
 

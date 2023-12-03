@@ -47,6 +47,7 @@ pub enum Operator {
 
 #[derive(Debug, PartialEq)]
 pub enum UnaryOperator {
+    Minus,
     Factorial,
     Sin,
     Cos,
