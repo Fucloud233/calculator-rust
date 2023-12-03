@@ -1,9 +1,10 @@
+use statrs::function::factorial;
 use std::collections::HashMap;
 use std::f64;
 
 use lalrpop_util::lalrpop_mod;
 
-use crate::ast::{Expr, Line, Operator, ID};
+use crate::ast::{Expr, Line, Operator, UnaryOperator, ID};
 use crate::utils::error::CalculatorError;
 
 pub struct Calculator {
@@ -13,11 +14,12 @@ pub struct Calculator {
 // type ParseError = lalrpop_util::ParseError<usize, Token<'_>, &str>;
 
 impl Calculator {
-
     /* --------------- init --------------- */
 
     pub fn new() -> Self {
-        Calculator { symbol_table: HashMap::new() }
+        Calculator {
+            symbol_table: HashMap::new(),
+        }
     }
 
     fn before_calculate(&mut self) {
@@ -25,13 +27,15 @@ impl Calculator {
         self.symbol_table.clear();
     }
 
-
     /* --------------- calculator --------------- */
 
     // return error type to be determined
-    pub fn calculate_expr<'input>(&mut self, line: &'input str) -> Result<f64, CalculatorError<'input>> {
+    pub fn calculate_expr<'input>(
+        &mut self,
+        line: &'input str,
+    ) -> Result<f64, CalculatorError<'input>> {
         self.before_calculate();
-        
+
         let parser_result = parse_line(line)?;
 
         if let Line::Expression(expr) = parser_result {
@@ -44,11 +48,14 @@ impl Calculator {
 
     // [Notice] reading and calculating must be decoupled
     // otherwise it will cause lifetime error
-    pub fn calculate_file<'input>(&mut self, lines: Vec<&'input str>) -> Result<Vec<f64>, CalculatorError<'input>> {
+    pub fn calculate_file<'input>(
+        &mut self,
+        lines: Vec<&'input str>,
+    ) -> Result<Vec<f64>, CalculatorError<'input>> {
         // init the status
         self.before_calculate();
 
-        // using result array 
+        // using result array
         // to decouple computation and output
         let mut results: Vec<f64> = Vec::new();
         for line in lines {
@@ -59,8 +66,8 @@ impl Calculator {
                 Line::Expression(expr) => {
                     let value = self.handle_expression(&expr)?;
                     results.push(value);
-                },
-                Line::Sentence(id, expr) => self.handle_sentence(&id, &expr)?
+                }
+                Line::Sentence(id, expr) => self.handle_sentence(&id, &expr)?,
             }
         }
 
@@ -86,11 +93,41 @@ impl Calculator {
             },
             Expr::Value(value) => Ok(*value),
             Expr::Operation { l, r, opt } => self.handle_operation(l, r, opt),
+            Expr::UnaryOperation { operand, opt } => self.handle_unary_operation(operand, opt),
         }
     }
 
     #[inline]
-    fn handle_operation<'input>(&mut self, l: &Expr, r: &Expr, opt: &Operator) -> Result<f64, CalculatorError<'input>> {
+    fn handle_unary_operation<'input>(
+        &mut self,
+        operand: &Expr,
+        opt: &UnaryOperator,
+    ) -> Result<f64, CalculatorError<'input>> {
+        let included = |num: f64| {
+            if (num - num.round()).abs() < 1e-10 {
+                num.round()
+            } else {
+                num
+            }
+        };
+
+        let operand_ = self.handle_expression(operand)?;
+        match opt {
+            // NOTE optimize: float can be factorial by gamma function
+            UnaryOperator::Factorial => Ok(factorial::factorial(operand_ as u64)),
+            UnaryOperator::Sin => Ok(included(operand_.sin())),
+            UnaryOperator::Cos => Ok(included(operand_.cos())),
+            UnaryOperator::Tan => Ok(included(operand_.tan())),
+        }
+    }
+
+    #[inline]
+    fn handle_operation<'input>(
+        &mut self,
+        l: &Expr,
+        r: &Expr,
+        opt: &Operator,
+    ) -> Result<f64, CalculatorError<'input>> {
         let left = self.handle_expression(l)?;
         let right = self.handle_expression(r)?;
 
@@ -124,8 +161,8 @@ impl Calculator {
                 if left <= 0.0 || right <= 0.0 {
                     return Err(CalculatorError::ArithmeticError(
                         "Log with zero base or zero argument",
-                    ))
-                } 
+                    ));
+                }
 
                 // NOTE can't use match on float type!
                 // NOTE use log2 ,ln and log10 to get more precise result, maybe use other crates future
@@ -141,7 +178,6 @@ impl Calculator {
             }
         }
     }
-
 
     pub(crate) fn handle_sentence<'input>(
         &mut self,
