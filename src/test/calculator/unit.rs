@@ -36,16 +36,30 @@ fn test_handle_sentence() {
 fn test_calculate_expression() {
     let cases = vec![
         // FIXME: "1-2" can be parsed
-        ("1+2", 3.), ("1 - 2", -1.), ("1*2", 2.), ("1/2", 0.5), 
-        ("2^2", 4.), ("e^1", f64::consts::E), ("e^{-1}", f64::consts::E.recip()),
-        ("\\sqrt[3]8", 2.), ("\\log_2 8", 3.), ("\\ln e", 1.)
+        ("1+2", 3.),
+        ("1 - 2", -1.),
+        ("1*2", 2.),
+        ("1/2", 0.5),
+        ("2^2", 4.),
+        ("e^1", f64::consts::E),
+        ("e^{-1}", f64::consts::E.recip()),
+        ("\\sqrt[3]8", 2.),
+        ("\\log_2 8", 3.),
+        ("\\ln e", 1.),
+        ("(1+2)!", 6.),
+        ("sin(\\pi / 2)", 1.),
+        ("cos0", 1.),
+        ("tan(\\pi / 4)", 1.),
     ];
 
     let mut calculator = Calculator::new();
     cases.iter().for_each(|(line, value)| {
         match calculator.calculate_expr(line) {
             Ok(r) => assert_eq!(r, *value),
-            Err(e) => {eprintln!("{}:\n{:#?}", line, e); assert!(false)}
+            Err(e) => {
+                eprintln!("{}:\n{:#?}", line, e);
+                assert!(false)
+            }
         };
     })
 }
