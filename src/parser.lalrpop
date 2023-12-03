@@ -49,8 +49,6 @@ SingleNumber: f64 = {
 
 // [deprecated] merge int and float into value
 pub (crate) Value: f64 = {
-    // simple float type implement
-    // r"[1-9][1-9][0-9]*" => f64::from_str(<>).unwrap(),
     <VALUE> => f64::from_str(<>).unwrap(),
     <DUAL_VALUE> => f64::from_str(<>).unwrap(),
 }
@@ -68,13 +66,14 @@ pub (crate) Id: ast::ID = {
 
 // Record the order of operations
 
+// Parsing Process:
+// Line->Expr->Factor->Level1->LatexTerm/LogPrefix/LatexDualValue->Term->Line
+
 // 0. Parentheses (we merge value(int/float), id and parentheses)
 Term: Box<ast::Expr> = {
     Value => Box::new(ast::Expr::Value(<>)),
     LatexTerm => <>,
 
-    // you can see that the parser is a loop:
-    // "Expr -> Factor -> level1 -> Term -> Expr"
     LP <expr: Expr> RP => expr
 }
 
@@ -99,7 +98,7 @@ LatexDualValue: (Box<ast::Expr>, Box<ast::Expr>) = {
     }
 }
 
-// dual_value: handle specific form such log_210->log_2{10}
+// handle specific form such log_210->log_2{10}
 LatexValue: (Box<ast::Expr>, Box<ast::Expr>) = {
    <value: VALUE> => {
         let mut chars = value.chars();
@@ -122,15 +121,11 @@ LogPrefix: Box<ast::Expr> = {
 // TODO deal with the mixed of calculate belows
 
 // 1. Exponentiation / Root / Log
-// NOTICE Now Only Support Float Type Like this: a ^ {3.2} or \exp {3.2} (It can be optimization soon)
-// NOTICE Nesting of belows are not supported now
 Level1: Box<ast::Expr> = {
     <l: LatexTerm> Superscript <r: LatexTerm> 
         => Box::new(ast::Expr::Operation{l, r, opt: ast::Operator::Power}),
 
     // e.g. \exp{(2)}
-    // EXP LC LP <r: Expr> RP RC 
-    // It can be more simple as below
     EXP <r: LatexTerm>
         => Box::new(ast::Expr::Operation{
             l: Box::new(ast::Expr::Id(ast::ID::E)), 
@@ -138,7 +133,6 @@ Level1: Box<ast::Expr> = {
             opt: ast::Operator::Power
         }),
 
-    // FIXME:
     //  \sqrt{}
     SQRT <r: LatexTerm> 
         => Box::new(ast::Expr::Operation{
