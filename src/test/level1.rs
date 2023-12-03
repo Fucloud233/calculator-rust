@@ -172,6 +172,6 @@ fn log_test() {
             },
         ),
         ("\\log_28", new_arithmetic(2., 8., Operator::Log)),
-        ("\\log_288", new_arithmetic(2., 88., Operator::Log)),
+        ("\\log_210", new_arithmetic(2., 10., Operator::Log)),
     ])
 }

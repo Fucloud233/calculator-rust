@@ -86,6 +86,7 @@ LatexTerm: Box<ast::Expr> = {
     LC <expr: Expr> RC => expr
 }
 
+// handle specific form such log_28->log_2{8} \frac12 -> \frac{1}{2}
 LatexDualValue: (Box<ast::Expr>, Box<ast::Expr>) = {
     <value: DUAL_VALUE> => {
         let next_digit = |chars: &mut Chars| 
@@ -95,9 +96,11 @@ LatexDualValue: (Box<ast::Expr>, Box<ast::Expr>) = {
         let base = next_digit(&mut chars);
         let argument = next_digit(&mut chars);
         ( ast::Expr::new_value(base), ast::Expr::new_value(argument) )
-    },
+    }
+}
 
-    // MULTI_VALUE
+// dual_value: handle specific form such log_210->log_2{10}
+LatexValue: (Box<ast::Expr>, Box<ast::Expr>) = {
    <value: VALUE> => {
         let mut chars = value.chars();
 
@@ -167,6 +170,15 @@ Level1: Box<ast::Expr> = {
             opt: ast::Operator::Log
         }),
 
+    // \log_nm
+    // handle specific form such log_210->log_2{10}
+    LOG Subscript <dual_value: LatexValue> => 
+        Box::new(ast::Expr::Operation{
+            l: dual_value.0,
+            r: dual_value.1,
+            opt: ast::Operator::Log
+        }),
+
     Term => <>,
 }
 
@@ -182,7 +194,7 @@ Factor: Box<ast::Expr> = {
         => Box::new(ast::Expr::Operation{
             l, r, opt: ast::Operator::Div
         }),
-    // FIXME here will parse error
+
     FRAC <dual_value: LatexDualValue> => 
         Box::new(ast::Expr::Operation{
             l: dual_value.0,
