@@ -30,6 +30,13 @@ fn expr_test() {
             ),
         ),
         (
+            "-(3+4)",
+            new_unary_operation(
+                new_operation(new_value(3.), new_value(4.), Operator::Plus),
+                UnaryOperator::Minus,
+            ),
+        ),
+        (
             "3!",
             new_unary_operation(new_value(3.), UnaryOperator::Factorial),
         ),
