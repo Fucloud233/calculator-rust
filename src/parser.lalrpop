@@ -37,6 +37,10 @@ SQRT = "\\sqrt";
 LOG = "\\log";
 LN = "\\ln";
 
+SinOpt: ast::UnaryOperator =    { "sin" => ast::UnaryOperator::Sin}
+CosOpt: ast::UnaryOperator =     { "cos" => ast::UnaryOperator::Cos}
+TanOpt: ast::UnaryOperator =     { "tan" => ast::UnaryOperator::Tan}
+FactorialOpt: ast::UnaryOperator =     { "!" => ast::UnaryOperator::Factorial}
 
 PlusOpt: ast::Operator =    { "+" => ast::Operator::Plus}
 SubOpt: ast::Operator =     { "-" => ast::Operator::Sub}
@@ -202,6 +206,10 @@ Factor: Box<ast::Expr> = {
 pub Expr: Box<ast::Expr> = {
     <l: Expr> <opt: PlusOpt> <r: Factor> => Box::new(ast::Expr::Operation{<>}),
     <l: Expr> <opt: SubOpt> <r: Factor> => Box::new(ast::Expr::Operation{<>}),
+    <opt: SinOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
+    <opt: CosOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
+    <opt: TanOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
+    <operand: Expr> <opt: FactorialOpt> => Box::new(ast::Expr::UnaryOperation{<>}),
     Factor => <>,
 }
 
