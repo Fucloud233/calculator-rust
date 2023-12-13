@@ -1,3 +1,4 @@
+use colored::Colorize;
 use statrs::function::factorial;
 use std::collections::HashMap;
 use std::f64;
@@ -38,12 +39,11 @@ impl Calculator {
 
         let parser_result = parse_line(line)?;
 
-        if let Line::Expression(expr) = parser_result {
-            self.handle_expression(&expr)
-        } else {
-            // an error will occur when parsing sentence
-            // TODO: 表达式计算的错误处理部分
-            todo!()
+        match parser_result {
+            Line::Expression(expr) => self.handle_expression(&expr),
+            Line::Sentence(_, _) => {
+                Err(CalculatorError::Custom("use expression instead of Sentences".into()))
+            },
         }
     }
 
@@ -201,6 +201,7 @@ lalrpop_mod!(pub parser);
 fn parse_line(line: &str) -> Result<Line, CalculatorError> {
     match parser::LineParser::new().parse(line) {
         Ok(r) => Ok(r),
-        Err(e) => return Err(CalculatorError::ParseError(e)),
+        Err(e) => {
+            return Err(CalculatorError::ParseError(e))},
     }
 }

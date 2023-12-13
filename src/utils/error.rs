@@ -11,4 +11,7 @@ pub enum CalculatorError<'input> {
     ArithmeticError(&'input str),
     OverflowError,
     UndefinedIdError(ID),
+
+    // ... other wrong types
+    Custom(String),
 }

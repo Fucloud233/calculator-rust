@@ -59,7 +59,7 @@ fn main() {
                 }
                 Err(e) => {
                     // 如果有错误，处理错误
-                    println!("An error occurred: {:?}", e);
+                    println!("{} {:?}","An error occurred => :".red(), e);
                 }
             }
         }
