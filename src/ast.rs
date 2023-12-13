@@ -17,15 +17,20 @@ pub enum Expr {
         r: Box<Expr>,
         opt: Operator,
     },
+
+    UnaryOperation {
+        operand: Box<Expr>,
+        opt: UnaryOperator,
+    },
 }
 
 impl Expr {
-    pub fn new_value(value: f64) -> Box<Expr>{
+    pub fn new_value(value: f64) -> Box<Expr> {
         Box::new(Expr::Value(value))
-    } 
+    }
 
     pub fn new_operation(l: Box<Expr>, r: Box<Expr>, opt: Operator) -> Box<Expr> {
-        Box::new(Expr::Operation { l, r, opt})
+        Box::new(Expr::Operation { l, r, opt })
     }
 }
 
@@ -38,6 +43,15 @@ pub enum Operator {
     Power,
     Root,
     Log,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum UnaryOperator {
+    Minus,
+    Factorial,
+    Sin,
+    Cos,
+    Tan,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]

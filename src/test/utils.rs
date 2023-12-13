@@ -1,4 +1,4 @@
-use crate::ast::{Expr, Greek, Operator, ID, Line};
+use crate::ast::{Expr, Greek, Line, Operator, UnaryOperator, ID};
 use lalrpop_util::lalrpop_mod;
 
 lalrpop_mod!(pub parser);
@@ -14,18 +14,25 @@ pub fn line_test_runner(map: Vec<(&str, Line)>) {
 }
 
 pub fn new_operation(l: Expr, r: Expr, opt: Operator) -> Expr {
-    Expr::Operation { 
-        l: Box::new(l), 
-        r: Box::new(r), 
-        opt 
+    Expr::Operation {
+        l: Box::new(l),
+        r: Box::new(r),
+        opt,
+    }
+}
+
+pub fn new_unary_operation(operand: Expr, opt: UnaryOperator) -> Expr {
+    Expr::UnaryOperation {
+        operand: Box::new(operand),
+        opt,
     }
 }
 
 pub fn new_arithmetic(l: f64, r: f64, opt: Operator) -> Expr {
-    Expr::Operation { 
+    Expr::Operation {
         l: Expr::new_value(l),
         r: Expr::new_value(r),
-        opt
+        opt,
     }
 }
 

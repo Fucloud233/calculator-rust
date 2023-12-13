@@ -9,6 +9,8 @@ edition = "2021"
 # if you want to use this crate
 # you must import it in the same way as below
 lalrpop-util = { version = "0.20.0", features = ["lexer", "unicode"] }
+statrs = "0.16.0"
+
 
 [build-dependencies]
-lalrpop= "0.20.0"
+lalrpop = "0.20.0"
