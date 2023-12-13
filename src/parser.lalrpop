@@ -37,11 +37,11 @@ SQRT = "\\sqrt";
 LOG = "\\log";
 LN = "\\ln";
 
-MinusOpt: ast::UnaryOperator =     { "-" => ast::UnaryOperator::Minus}
-SinOpt: ast::UnaryOperator =    { "sin" => ast::UnaryOperator::Sin}
-CosOpt: ast::UnaryOperator =     { "cos" => ast::UnaryOperator::Cos}
-TanOpt: ast::UnaryOperator =     { "tan" => ast::UnaryOperator::Tan}
-FactorialOpt: ast::UnaryOperator =     { "!" => ast::UnaryOperator::Factorial}
+MinusOpt: ast::UnaryOperator =      { "-" => ast::UnaryOperator::Minus}
+SinOpt: ast::UnaryOperator =        { "sin" => ast::UnaryOperator::Sin}
+CosOpt: ast::UnaryOperator =        { "cos" => ast::UnaryOperator::Cos}
+TanOpt: ast::UnaryOperator =        { "tan" => ast::UnaryOperator::Tan}
+FactorialOpt: ast::UnaryOperator =  { "!" => ast::UnaryOperator::Factorial}
 
 PlusOpt: ast::Operator =    { "+" => ast::Operator::Plus}
 SubOpt: ast::Operator =     { "-" => ast::Operator::Sub}
@@ -103,16 +103,21 @@ LatexDualValue: (Box<ast::Expr>, Box<ast::Expr>) = {
     }
 }
 
-// handle specific form such log_210->log_2{10}
-LatexValue: (Box<ast::Expr>, Box<ast::Expr>) = {
-   <value: VALUE> => {
-        let mut chars = value.chars();
+// [deprecated] log_210 != log_210, log_210 == log_{2}{1} 0
+// in the syntax of Latex, we only receive single number for \log or \frac,
+// otherwise, we should use '{}' to wrap those value,
+// use '()' is invalid too
 
-        let base = chars.next().unwrap().to_digit(10).unwrap() as f64;
-        let argument = chars.collect::<String>().parse::<f64>().unwrap();
-        ( ast::Expr::new_value(base), ast::Expr::new_value(argument) )
-    }
-}
+// handle specific form such log_210->log_2{10}
+// LatexValue: (Box<ast::Expr>, Box<ast::Expr>) = {
+//    <value: VALUE> => {
+//         let mut chars = value.chars();
+
+//         let base = chars.next().unwrap().to_digit(10).unwrap() as f64;
+//         let argument = chars.collect::<String>().parse::<f64>().unwrap();
+//         ( ast::Expr::new_value(base), ast::Expr::new_value(argument) )
+//     }
+// }
 
 LogPrefix: Box<ast::Expr> = {
     // log = log_10 
@@ -171,12 +176,12 @@ Level1: Box<ast::Expr> = {
 
     // \log_nm
     // handle specific form such log_210->log_2{10}
-    LOG Subscript <dual_value: LatexValue> => 
-        Box::new(ast::Expr::Operation{
-            l: dual_value.0,
-            r: dual_value.1,
-            opt: ast::Operator::Log
-        }),
+    // LOG Subscript <dual_value: LatexValue> => 
+    //     Box::new(ast::Expr::Operation{
+    //         l: dual_value.0,
+    //         r: dual_value.1,
+    //         opt: ast::Operator::Log
+    //     }),
 
     Term => <>,
 }
@@ -207,6 +212,7 @@ Factor: Box<ast::Expr> = {
 pub Expr: Box<ast::Expr> = {
     <l: Expr> <opt: PlusOpt> <r: Factor> => Box::new(ast::Expr::Operation{<>}),
     <l: Expr> <opt: SubOpt> <r: Factor> => Box::new(ast::Expr::Operation{<>}),
+    
     <opt: MinusOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
     <opt: SinOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
     <opt: CosOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
