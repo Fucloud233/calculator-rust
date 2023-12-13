@@ -2,7 +2,6 @@ use crate::ast::{Greek, ID};
 use crate::utils::file::read_lines;
 use std::fs::File;
 use std::io::Write;
-use std::path::Path;
 
 use lalrpop_util::lalrpop_mod;
 

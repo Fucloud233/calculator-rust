@@ -37,7 +37,7 @@ fn test_calculate_expression() {
     let cases = vec![
         // FIXME: "1-2" can be parsed
         ("1+2", 3.),
-        ("1 - 2", -1.),
+        ("1- 2", -1.),
         ("1*2", 2.),
         ("1/2", 0.5),
         ("2^2", 4.),
