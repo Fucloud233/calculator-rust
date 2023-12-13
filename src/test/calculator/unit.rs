@@ -48,9 +48,15 @@ fn test_calculate_expression() {
         ("\\ln e", 1.),
         ("-(3+4)", -7.),
         ("(1+2)!", 6.),
-        ("sin(\\pi / 2)", 1.),
-        ("cos0", 1.),
-        ("tan(\\pi / 4)", 1.),
+        ("\\sin(\\pi / 2)", 1.),
+        ("\\cos0", 1.),
+        ("\\tan(\\pi / 4)", 1.),
+
+        // extension test cases
+        ("\\sin(\\pi/2) * 2", 2.),
+        ("\\sin(\\pi/2)!", 1.),
+        ("\\sin(\\sin(\\pi/2) * (\\pi/2))", 1.),
+
     ];
 
     let mut calculator = Calculator::new();

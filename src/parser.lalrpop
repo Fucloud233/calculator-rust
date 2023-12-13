@@ -38,9 +38,9 @@ LOG = "\\log";
 LN = "\\ln";
 
 MinusOpt: ast::UnaryOperator =      { "-" => ast::UnaryOperator::Minus}
-SinOpt: ast::UnaryOperator =        { "sin" => ast::UnaryOperator::Sin}
-CosOpt: ast::UnaryOperator =        { "cos" => ast::UnaryOperator::Cos}
-TanOpt: ast::UnaryOperator =        { "tan" => ast::UnaryOperator::Tan}
+SinOpt: ast::UnaryOperator =        { "\\sin" => ast::UnaryOperator::Sin}
+CosOpt: ast::UnaryOperator =        { "\\cos" => ast::UnaryOperator::Cos}
+TanOpt: ast::UnaryOperator =        { "\\tan" => ast::UnaryOperator::Tan}
 FactorialOpt: ast::UnaryOperator =  { "!" => ast::UnaryOperator::Factorial}
 
 PlusOpt: ast::Operator =    { "+" => ast::Operator::Plus}
@@ -183,6 +183,11 @@ Level1: Box<ast::Expr> = {
     //         opt: ast::Operator::Log
     //     }),
 
+    <opt: MinusOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
+    <opt: SinOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
+    <opt: CosOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
+    <opt: TanOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
+
     Term => <>,
 }
 
@@ -212,12 +217,8 @@ Factor: Box<ast::Expr> = {
 pub Expr: Box<ast::Expr> = {
     <l: Expr> <opt: PlusOpt> <r: Factor> => Box::new(ast::Expr::Operation{<>}),
     <l: Expr> <opt: SubOpt> <r: Factor> => Box::new(ast::Expr::Operation{<>}),
-    
-    <opt: MinusOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
-    <opt: SinOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
-    <opt: CosOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
-    <opt: TanOpt> <operand: Term> => Box::new(ast::Expr::UnaryOperation{<>}),
-    <operand: Expr> <opt: FactorialOpt> => Box::new(ast::Expr::UnaryOperation{<>}),
+
+    <operand: Factor> <opt: FactorialOpt> => Box::new(ast::Expr::UnaryOperation{<>}),
     Factor => <>,
 }
 
