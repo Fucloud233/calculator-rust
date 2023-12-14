@@ -70,32 +70,6 @@ impl Calculator {
 
         Ok(results)
     }
-    // TODO use handle_line instead
-    // pub fn calculate_file<'input>(
-    //     &mut self,
-    //     lines: Vec<&'input str>,
-    // ) -> Result<Vec<f64>, CalculatorError<'input>> {
-    //     // init the status
-    //     self.before_calculate();
-
-    //     // using result array
-    //     // to decouple computation and output
-    //     let mut results: Vec<f64> = Vec::new();
-    //     for line in lines {
-    //         // it will call line_parser to parse
-    //         // which will return Line or custom error
-    //         let parse_result: Line = parse_line(&line)?;
-    //         match parse_result {
-    //             Line::Expression(expr) => {
-    //                 let value = self.handle_expression(&expr)?;
-    //                 results.push(value);
-    //             }
-    //             Line::Sentence(id, expr) => self.handle_sentence(&id, &expr)?,
-    //         }
-    //     }
-
-    //     Ok(results)
-    // }
 
     /* --------------- handler --------------- */
     pub(crate) fn handle_expression<'input>(
