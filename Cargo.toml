@@ -19,6 +19,9 @@ colored = "2.0"
 terminal_size = "0.1.17"
 term_size = "0.3.2"
 
+# High-precision operations
+rug = "1.11.0"
+
 
 [build-dependencies]
 lalrpop = "0.20.0"

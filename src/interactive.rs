@@ -2,12 +2,12 @@ use crate::calculator::Calculator;
 use colored::*;
 use std::fs;
 use std::io::{self, Write};
-use terminal_size::{terminal_size, Height, Width};
+use std::path::Path;
 
 pub fn interactive_mode() {
     println!(
         "{}{}",
-        "Entering interactive mode. Type 'exit' or 'e' to quit.\n".cyan(),
+        "Entering interactive mode. Type 'exit' or 'e' to quit.\nYou can use a , b , c as variables\n".cyan(),
         "Sentences, expressions, and file commands ('load <file_path>') are acceptable.\n".cyan()
     );
     let mut buffer = String::new();
@@ -56,6 +56,10 @@ pub fn interactive_mode() {
 }
 
 pub fn file_interactive_mode(file_path: &str, calculator: &mut Calculator) {
+    if Path::new(file_path).extension().unwrap_or_default() != "calc" {
+        println!("{} {}", "=> Error: Only .calc files are supported".red(), "> ".red());
+        return;
+    }
     match fs::read_to_string(file_path) {
         Err(e) => {
             println!("{} {}", "=> Error reading file:".red(), e);

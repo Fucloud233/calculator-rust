@@ -59,8 +59,6 @@ $ [output] 2
 >遇到表达式之后会直接输出结果，
 
 
-
-
 ```
 $ calc -i
 > 1 + 1
@@ -84,7 +82,12 @@ $ calc -i
 ```bash
 $ calc -p text.calc
 ```
+另一种方式则为先去进入交互模式之后来进行文件操作
 
+```bash
+$ calc -i
+> load test/add.calc
+```
 
 ## 错误提示
 

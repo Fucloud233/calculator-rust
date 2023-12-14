@@ -39,16 +39,18 @@ impl Calculator {
             Line::Expression(expr) => {
                 // 表达式的处理返回一个数值结果
                 self.handle_expression(&expr).map(Some)
-            },
+            }
             Line::Sentence(id, expr) => {
                 if allow_sentences {
                     // 处理语句但不返回数值结果
                     self.handle_sentence(&id, &expr)?;
                     Ok(None) // 表示没有数值结果
                 } else {
-                    Err(CalculatorError::UnusedExpressionError("use expression instead of Sentences, for example: 1+1".into()))
+                    Err(CalculatorError::UnusedExpressionError(
+                        "use expression instead of Sentences, for example: 1+1".into(),
+                    ))
                 }
-            },
+            }
         }
     }
 
@@ -129,19 +131,18 @@ impl Calculator {
         let left = self.handle_expression(l)?;
         let right = self.handle_expression(r)?;
 
-        // TODO deal with overflow error
         match opt {
-            Operator::Plus => Ok(left + right),
-            Operator::Sub => Ok(left - right),
-            Operator::Mul => Ok(left * right),
+            Operator::Plus => self.check_overflow(left + right),
+            Operator::Sub => self.check_overflow(left - right),
+            Operator::Mul => self.check_overflow(left * right),
             Operator::Div => {
                 if right == 0.0 {
                     Err(CalculatorError::ArithmeticError("Division by zero"))
                 } else {
-                    Ok(left / right)
+                    self.check_overflow(left / right)
                 }
             }
-            Operator::Power => Ok(left.powf(right)),
+            Operator::Power => self.check_overflow(left.powf(right)),
             Operator::Root => {
                 if right == 0.0 {
                     Err(CalculatorError::ArithmeticError("Root with zero index"))
@@ -152,28 +153,26 @@ impl Calculator {
                         "Odd root of a negative number",
                     ))
                 } else {
-                    Ok(right.powf(left.recip()))
+                    self.check_overflow(right.powf(left.recip()))
                 }
             }
             Operator::Log => {
                 if left <= 0.0 || right <= 0.0 {
-                    return Err(CalculatorError::ArithmeticError(
+                    Err(CalculatorError::ArithmeticError(
                         "Log with zero base or zero argument",
-                    ));
-                }
-
-                // NOTE can't use match on float type!
-                // NOTE use log2 ,ln and log10 to get more precise result, maybe use other crates future
-                Ok(if left == 2.0 {
-                    right.log2()
-                } else if left == f64::consts::E {
-                    right.ln()
-                } else if left == 10.0 {
-                    right.log10()
+                    ))
                 } else {
-                    right.log(left)
-                })
+                    self.check_overflow(right.log(left))
+                }
             }
+        }
+    }
+
+    fn check_overflow<'input>(&mut self,result: f64) -> Result<f64, CalculatorError<'input>> {
+        if result.is_infinite() || result.is_nan() {
+            Err(CalculatorError::OverflowError)
+        } else {
+            Ok(result)
         }
     }
 
@@ -196,7 +195,6 @@ lalrpop_mod!(pub parser);
 fn parse_line(line: &str) -> Result<Line, CalculatorError> {
     match parser::LineParser::new().parse(line) {
         Ok(r) => Ok(r),
-        Err(e) => {
-            return Err(CalculatorError::ParseError(e))},
+        Err(e) => return Err(CalculatorError::ParseError(e)),
     }
 }

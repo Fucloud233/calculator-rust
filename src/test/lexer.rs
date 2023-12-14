@@ -40,26 +40,3 @@ fn test_read_lines() {
 
     std::fs::remove_file(file_path).unwrap();
 }
-// #[test]
-// fn assign_test() {
-//     expr_test_runner(
-//         vec![
-//             (
-//                 r"a = b",
-//                 Expr::Operation {
-//                     l: Box::new(Expr::Id(ID::ASCII('a'))),
-//                     r: Box::new(Expr::Id(ID::ASCII('b'))),
-//                     opt: Operator::Assign,
-//                 },
-//             ),
-//             (
-//                 r"{(a)} = {(b)}",
-//                 Expr::Operation {
-//                     l: Box::new(Expr::Id(ID::ASCII('a'))),
-//                     r: Box::new(Expr::Id(ID::ASCII('b'))),
-//                     opt: Operator::Assign,
-//                 },
-//             ),
-//         ]
-//     )
-// }
