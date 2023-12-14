@@ -16,6 +16,7 @@ mod test {
 }
 
 mod calculator;
+mod interactive;
 
 mod utils {
     pub mod error;

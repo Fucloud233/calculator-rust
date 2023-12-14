@@ -1,4 +1,3 @@
-use colored::Colorize;
 use statrs::function::factorial;
 use std::collections::HashMap;
 use std::f64;
@@ -23,7 +22,7 @@ impl Calculator {
         }
     }
 
-    fn before_calculate(&mut self) {
+    pub fn before_calculate(&mut self) {
         // you must clear the symbol table before clear
         self.symbol_table.clear();
     }
