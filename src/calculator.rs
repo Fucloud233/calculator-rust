@@ -30,19 +30,25 @@ impl Calculator {
 
     /* --------------- calculator --------------- */
 
-    // return error type to be determined
-    pub fn calculate_expr<'input>(
+    pub fn handle_line<'input>(
         &mut self,
         line: &'input str,
-    ) -> Result<f64, CalculatorError<'input>> {
-        self.before_calculate();
-
+        allow_sentences: bool,
+    ) -> Result<Option<f64>, CalculatorError<'input>> {
         let parser_result = parse_line(line)?;
-
         match parser_result {
-            Line::Expression(expr) => self.handle_expression(&expr),
-            Line::Sentence(_, _) => {
-                Err(CalculatorError::Custom("use expression instead of Sentences".into()))
+            Line::Expression(expr) => {
+                // 表达式的处理返回一个数值结果
+                self.handle_expression(&expr).map(Some)
+            },
+            Line::Sentence(id, expr) => {
+                if allow_sentences {
+                    // 处理语句但不返回数值结果
+                    self.handle_sentence(&id, &expr)?;
+                    Ok(None) // 表示没有数值结果
+                } else {
+                    Err(CalculatorError::UnusedExpressionError("use expression instead of Sentences, for example: 1+1".into()))
+                }
             },
         }
     }
@@ -53,27 +59,43 @@ impl Calculator {
         &mut self,
         lines: Vec<&'input str>,
     ) -> Result<Vec<f64>, CalculatorError<'input>> {
-        // init the status
         self.before_calculate();
 
-        // using result array
-        // to decouple computation and output
-        let mut results: Vec<f64> = Vec::new();
+        let mut results = Vec::new();
         for line in lines {
-            // it will call line_parser to parse
-            // which will return Line or custom error
-            let parse_result: Line = parse_line(&line)?;
-            match parse_result {
-                Line::Expression(expr) => {
-                    let value = self.handle_expression(&expr)?;
-                    results.push(value);
-                }
-                Line::Sentence(id, expr) => self.handle_sentence(&id, &expr)?,
+            if let Some(result) = self.handle_line(line, true)? {
+                results.push(result);
             }
         }
 
         Ok(results)
     }
+    // TODO use handle_line instead
+    // pub fn calculate_file<'input>(
+    //     &mut self,
+    //     lines: Vec<&'input str>,
+    // ) -> Result<Vec<f64>, CalculatorError<'input>> {
+    //     // init the status
+    //     self.before_calculate();
+
+    //     // using result array
+    //     // to decouple computation and output
+    //     let mut results: Vec<f64> = Vec::new();
+    //     for line in lines {
+    //         // it will call line_parser to parse
+    //         // which will return Line or custom error
+    //         let parse_result: Line = parse_line(&line)?;
+    //         match parse_result {
+    //             Line::Expression(expr) => {
+    //                 let value = self.handle_expression(&expr)?;
+    //                 results.push(value);
+    //             }
+    //             Line::Sentence(id, expr) => self.handle_sentence(&id, &expr)?,
+    //         }
+    //     }
+
+    //     Ok(results)
+    // }
 
     /* --------------- handler --------------- */
     pub(crate) fn handle_expression<'input>(

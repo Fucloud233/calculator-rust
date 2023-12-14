@@ -3,6 +3,7 @@ use crate::calculator::Calculator;
 use crate::utils::file::read_lines;
 use colored::*;
 use std::fs;
+use std::io::{self, Write};
 use std::path::PathBuf;
 use structopt::StructOpt;
 #[cfg(test)]
@@ -28,7 +29,7 @@ mod utils {
 #[derive(StructOpt, Debug)]
 #[structopt(name = "calc", about = "A simple calculator")]
 struct Opt {
-    /// Calculate an expression directly, only direct expression is acceptable
+    /// Calculate an expression directly, only expression is acceptable
     #[structopt(short = "e", long = "expression")]
     expression: Option<String>,
 
@@ -49,17 +50,20 @@ fn main() {
             expression: Some(expr),
             ..
         } => {
-            // 处理单个表达式
             let mut calculator = Calculator::new();
-            
-            // 调用 calculate_expr 函数
-            match calculator.calculate_expr(&expr) {
-                Ok(result) => {
-                    println!("{} {}", "Result => :".green(), result);
+            match calculator.handle_line(&expr, false) {
+                Ok(Some(result)) => {
+                    // 处理有数值结果的情况
+                    println!("{} {}", "Result => :".green(), result.to_string().bold());
+                }
+                Ok(None) => {
+                    println!(
+                        "{}",
+                        "Statement executed successfully, but no value returned.".green()
+                    );
                 }
                 Err(e) => {
-                    // 如果有错误，处理错误
-                    println!("{} {:?}","An error occurred => :".red(), e);
+                    println!("{} {}", "An error occurred => :".red(), e);
                 }
             }
         }
@@ -67,6 +71,7 @@ fn main() {
             path: Some(file_path),
             ..
         } => {
+            // TODO:
             // 从文件中读取并处理表达式
             if let Ok(contents) = fs::read_to_string(file_path) {
                 for line in contents.lines() {
@@ -85,7 +90,10 @@ fn main() {
         }
         _ => {
             // 显示帮助信息或错误提示
-            println!("Usage: calc -e <expression> | -p <path> | -i");
+            println!(
+                "{}",
+                "Usage: calc -e <expression> | -p <path> | -i".bright_blue()
+            );
         }
     }
 }
@@ -98,12 +106,46 @@ fn calculate_expression(expr: &str) -> f64 {
 
 fn interactive_mode() {
     println!(
-        "{}",
-        "Entering interactive mode. Type 'exit' to quit."
-            .green()
+        "{},{}",
+        "Entering interactive mode. Type 'exit' to quit. ==>\n".green(),
+        "sentences and expressions are acceptable, input one line at a time\n".green()
     );
+    // 创建一个用于读取输入的缓冲区
+    let mut buffer = String::new();
+
+    loop {
+        // 打印提示符并刷新输出，以确保提示符立即显示
+        print!("> ");
+        io::stdout().flush().unwrap();
+
+        let mut calculator = Calculator::new();
+        // 读取用户输入
+        buffer.clear();
+        match io::stdin().read_line(&mut buffer) {
+            Ok(_) => {
+                // 删除输入字符串末尾的换行符
+                let input = buffer.trim().to_string();
+
+                // 处理用户输入，如果输入特定命令（如"exit"）则退出
+                if input == "exit" {
+                    break;
+                }
+
+                // 在这里调用你的处理函数（例如计算表达式或其他命令）
+                // 例如：handle_input(input);
+
+                // 可以在此处输出结果或反馈
+                // println!("Result: {}", result);
+            }
+            Err(error) => {
+                println!("Error: {}", error);
+                break;
+            }
+        }
+    }
+
     // 这里应该是你的交互模式逻辑
     // 例如：读取用户输入，计算表达式，显示结果
     // 在这个简单的例子中，我们将直接退出
-    println!("{}", "Exiting interactive mode.".green().bold());
+    println!("{}", "Exiting interactive mode.".green());
 }
