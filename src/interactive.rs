@@ -2,6 +2,7 @@ use crate::calculator::Calculator;
 use colored::*;
 use std::fs;
 use std::io::{self, Write};
+use terminal_size::{terminal_size, Height, Width};
 
 pub fn interactive_mode() {
     println!(
@@ -66,7 +67,7 @@ pub fn file_interactive_mode(file_path: &str, calculator: &mut Calculator) {
             println!("{}", "Use 'run' or 'r' to run whole file , 'step' or 's' to move to next line ,  'exit' or 'e' to exit".yellow());
             let mut lines = contents.lines().collect::<Vec<&str>>();
             let mut line_index = 0;
-            println!("{}\n{}","File contents:".cyan(), contents.yellow());
+            println!("{}\n{}", "File contents:".cyan(), contents.yellow());
             print!("{}", "=> ".cyan());
             loop {
                 io::stdout().flush().unwrap();
@@ -121,22 +122,31 @@ pub fn file_interactive_mode(file_path: &str, calculator: &mut Calculator) {
 }
 
 pub fn execute_line(line: &str, calculator: &mut Calculator) {
+    // 获取终端宽度以用于格式化输出
+    let terminal_width = match term_size::dimensions() {
+        Some((w, _)) => w,
+        None => 80,  // 默认终端宽度
+    };
+
+    let line_display_width = 30;  // 分配给表达式显示的宽度
+    let line_trimmed = if line.len() > line_display_width {
+        &line[..line_display_width - 3]  // 如果太长，则截断并加上省略号
+    } else {
+        line
+    };
+
     match calculator.handle_line(line, true) {
         Ok(Some(result)) => {
-            println!(
-                "{} {}",
-                "Line result => :".green(),
-                result.to_string().bold()
-            );
+            let result_str = format!("{:<width$}", format!("Line result => : {}", result).green(), width = terminal_width - line_display_width);
+            println!("{}{}", result_str, format!("| Expression: {}", line_trimmed).cyan());
         }
         Ok(None) => {
-            println!(
-                "{}",
-                "Line executed successfully, no value returned.".green()
-            );
+            let result_str = format!("{:<width$}", "Line executed successfully, no value returned.".green(), width = terminal_width - line_display_width);
+            println!("{}{}", result_str, format!("| Expression: {}", line_trimmed).cyan());
         }
         Err(e) => {
-            println!("{} {}", "Line error => :".red(), e);
+            let result_str = format!("{:<width$}", format!("Line error => : {}", e).red(), width = terminal_width - line_display_width);
+            println!("{}{}", result_str, format!("| Expression: {}", line_trimmed).cyan());
         }
     }
 }

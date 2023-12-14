@@ -16,6 +16,8 @@ statrs = "0.16.0"
 # we use structopt and colored to build our cli terminal
 structopt = "0.3"
 colored = "2.0"
+terminal_size = "0.1.17"
+term_size = "0.3.2"
 
 
 [build-dependencies]
