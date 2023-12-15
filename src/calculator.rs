@@ -70,7 +70,7 @@ impl Calculator {
                 .map_err(|kind| CalculatorError::new(kind, None))
         } else {
             // an error will occur when parsing sentence
-            todo!()
+            CalculatorError::new_err(NotValueReturn, None)
         }
     }
 
