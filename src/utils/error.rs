@@ -13,13 +13,14 @@ pub enum CalculatorError<'input> {
     // TODO: Overflow error needs to be done
     OverflowError,
     UndefinedIdError(ID),
-
+    PrecisionError,
     UnusedExpressionError(String),
 }
 
 impl<'input> fmt::Display for CalculatorError<'input> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            CalculatorError::PrecisionError => write!(f, "Precision Error: the result may not be accurate"),
             CalculatorError::ParseError(e) => write!(f, "Parse Error: {}", e),
             CalculatorError::ArithmeticError(e) => write!(f, "Arithmetic Error: {}", e),
             CalculatorError::OverflowError => write!(f, "Overflow Error"),

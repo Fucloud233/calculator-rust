@@ -168,11 +168,17 @@ impl Calculator {
         }
     }
 
-    fn check_overflow<'input>(&mut self,result: f64) -> Result<f64, CalculatorError<'input>> {
+
+    fn check_overflow<'input>(&mut self, result: f64) -> Result<f64, CalculatorError<'input>> {
         if result.is_infinite() || result.is_nan() {
             Err(CalculatorError::OverflowError)
         } else {
-            Ok(result)
+            let max_precision = 10f64.powi(15);
+            if result.fract().abs() > 0.0 && (result.abs() * max_precision).fract() > 0.0 {
+                Err(CalculatorError::PrecisionError)
+            } else {
+                Ok(result)
+            }
         }
     }
 
