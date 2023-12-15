@@ -25,7 +25,8 @@ impl Calculator {
         }
     }
 
-    pub fn before_calculate(&mut self) {
+    #[inline]
+    fn before_calculate(&mut self) {
         // you must clear the symbol table before clear
         self.symbol_table.clear();
     }
@@ -74,14 +75,32 @@ impl Calculator {
         }
     }
 
+    pub fn calculate_line<'input> (
+        &mut self,
+        line: &'input str,
+        index: Option<usize>
+    ) -> Result<Option<f64>, CalculatorError<'input>> {
+        let wrap_err = |kind: CalculatorErrorKind<'input>| {
+            CalculatorError::new(kind, index)
+        };
+
+        // it will call line_parser to parse
+        let parse_result: Line = parse_line(&line)?;
+        Ok(match parse_result {
+            Line::Expression(expr) => Some(self.handle_expression(&expr).map_err(wrap_err)?),
+            Line::Sentence(id, expr) => {
+                self.handle_sentence(&id, &expr) .map_err(wrap_err)?;
+                None
+            }
+        })
+    }
+
     // [Notice] reading and calculating must be decoupled
     // otherwise it will cause lifetime error
     pub fn calculate_file<'input>(
         &mut self,
         lines: Vec<&'input str>,
     ) -> Result<Vec<f64>, CalculatorError<'input>> {
-
-
         // init the status
         self.before_calculate();
 
@@ -89,24 +108,16 @@ impl Calculator {
         // to decouple computation and output
         let mut results: Vec<f64> = Vec::new();
         for (i, line) in lines.iter().enumerate() {
-
-            let wrap_err = |kind: CalculatorErrorKind| {
-                CalculatorError::new(kind, Some(i))
-            };
-
-            // it will call line_parser to parse
-            // which will return Line or custom error
-            let parse_result: Line = parse_line(&line)?;
-            match parse_result {
-                Line::Expression(expr) => {
-                    let value = self.handle_expression(&expr).map_err(wrap_err)?;
-                    results.push(value);
-                }
-                Line::Sentence(id, expr) => self.handle_sentence(&id, &expr).map_err(wrap_err)?,
+            if let Some(value) = self.calculate_line(line, Some(i))? {
+                results.push(value)
             }
         }
 
         Ok(results)
+    }
+
+    pub fn clear(&mut self) {
+        self.symbol_table.clear();
     }
 
 
