@@ -1,6 +1,6 @@
 use crate::calculator::Calculator;
 use crate::interactive::interactive_mode;
-use crate::utils::error::CalculatorError;
+use crate::utils::io::{print_error, print_value};
 use std::env;
 use std::fs;
 use std::path::PathBuf;
@@ -22,15 +22,6 @@ pub struct Opt {
     interactive: bool,
 }
 
-fn print_value(value: f64) {
-    println!("{} {}", "Result => :".green(), value.to_string().bold())  
-}
-
-fn print_error(error: CalculatorError) {
-    // TODO: perfect error display
-    eprintln!("{} {}", "An error occurred => :".red(), error.message().bold())  
-}
-
 pub fn run_cli() {
     let opt = Opt::from_args();
 
@@ -45,15 +36,16 @@ pub fn run_cli() {
         let lines = match fs::read_to_string(&file_path) {
             Ok(contents) => {
                 println!("File contents:\n{}", contents.yellow());
-                contents.lines().collect::<Vec<&str>>()
+                contents.lines().map(|line| line.into()).collect::<Vec<String>>()
             }, 
             Err(_) => {
                 eprintln!("{}", "Error reading file".red());
                 return
             }
         };
-            
-        match Calculator::new().calculate_file(lines) {
+
+        let ref_lines = lines.iter().map(|line| line.as_str()).collect::<Vec<&str>>();
+        match Calculator::new().calculate_file(ref_lines) {
             Ok(values) => values.iter().for_each(|value| print_value(*value)),
             Err(error) => print_error(error)
         }
