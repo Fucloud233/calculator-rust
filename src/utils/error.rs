@@ -1,10 +1,39 @@
 use crate::ast::ID;
 use lalrpop_util::lexer::Token;
 use lalrpop_util::ParseError;
-use std::fmt;
+
+
+#[derive(Debug)]
+pub struct CalculatorError<'input> {
+    kind: CalculatorErrorKind<'input>,
+    index: Option<usize>
+}
+
+impl<'input> CalculatorError<'input> {
+    pub fn new(kind: CalculatorErrorKind<'input>, index: Option<usize>) -> Self {
+        CalculatorError {
+            kind, index
+        }
+    }
+
+    pub fn new_err<T>(kind: CalculatorErrorKind<'input>, index: Option<usize>) -> Result<T, Self> {
+        Err(CalculatorError::new(kind, index))
+    }
+    pub fn message(&self) -> String {
+        match self.kind {
+            ParseError(e) => format!("Parse Error: {}", e),
+            ArithmeticError(e) => format!("Arithmetic Error: {}", e),
+            OverflowError => String::from("Overflow Error"),
+            UndefinedIdError(id) => format!("Undefined Identifier Error: {:?}", id),
+            UnusedExpressionError(msg) => format!("Unused Expression Error: {}", msg),
+            // 其他错误类型...
+            _ => todo!()
+        }
+    } 
+}
 
 #[derive(PartialEq, Debug)]
-pub enum CalculatorError<'input> {
+pub enum CalculatorErrorKind<'input> {
     /// I don't know what will happen here when use 'static lifetime
     ParseError(ParseError<usize, Token<'input>, &'static str>),
 
@@ -15,17 +44,24 @@ pub enum CalculatorError<'input> {
     UndefinedIdError(ID),
 
     UnusedExpressionError(String),
+
+    NotValueReturn,
 }
 
-impl<'input> fmt::Display for CalculatorError<'input> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            CalculatorError::ParseError(e) => write!(f, "Parse Error: {}", e),
-            CalculatorError::ArithmeticError(e) => write!(f, "Arithmetic Error: {}", e),
-            CalculatorError::OverflowError => write!(f, "Overflow Error"),
-            CalculatorError::UndefinedIdError(id) => write!(f, "Undefined Identifier Error: {:?}", id),
-            CalculatorError::UnusedExpressionError(msg) => write!(f, "Unused Expression Error: {}", msg),
-            // 其他错误类型...
-        }
-    }
-}
+use CalculatorErrorKind::*;
+
+// impl<'input> fmt::Display for CalculatorErrorKind<'input> {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         let message = match self {
+//             ParseError(e) => format!("Parse Error: {}", e),
+//             ArithmeticError(e) => format!("Arithmetic Error: {}", e),
+//             OverflowError => String::from("Overflow Error"),
+//             UndefinedIdError(id) => format!("Undefined Identifier Error: {:?}", id),
+//             UnusedExpressionError(msg) => format!("Unused Expression Error: {}", msg),
+//             // 其他错误类型...
+//             _ => todo!()
+//         };
+
+//         write!(f, "{}", &message)
+//     }
+// }
