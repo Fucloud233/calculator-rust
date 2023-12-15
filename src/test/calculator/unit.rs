@@ -61,7 +61,7 @@ fn test_handle_line() {
 
     let mut calculator = Calculator::new();
     cases.iter().for_each(|(line, value)| {
-        match calculator.handle_line(line,false) {
+        match calculator.calculate_line(line, None) {
             Ok(Some(r)) => assert_eq!(r, *value),
             Ok(None)=> {
                 assert!(true)

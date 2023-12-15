@@ -1,5 +1,5 @@
 use crate::ast::{Greek, ID};
-use crate::utils::file::read_lines;
+use crate::utils::io::read_lines;
 use std::fs::File;
 use std::io::Write;
 
