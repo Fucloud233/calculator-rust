@@ -54,6 +54,23 @@ impl Calculator {
         }
     }
 
+    pub fn calculate_expr<'input>(
+        &mut self,
+        line: &'input str,
+    ) -> Result<f64, CalculatorError<'input>> {
+        self.before_calculate();
+
+        let parser_result = parse_line(line)?;
+
+        if let Line::Expression(expr) = parser_result {
+            self.handle_expression(&expr)
+        } else {
+            // an error will occur when parsing sentence
+            todo!()
+        }
+    }
+
+
     // [Notice] reading and calculating must be decoupled
     // otherwise it will cause lifetime error
     pub fn calculate_file<'input>(
@@ -89,7 +106,12 @@ impl Calculator {
                     }
                 }
             },
-            Expr::Value(value) => Ok(*value),
+            // when meeting inf or nan, return error 
+            Expr::Value(value) => if value.is_finite() || value.is_nan() {
+                Err(CalculatorError::OverflowError)
+            } else {
+                Ok(*value)
+            },
             Expr::Operation { l, r, opt } => self.handle_operation(l, r, opt),
             Expr::UnaryOperation { operand, opt } => self.handle_unary_operation(operand, opt),
         }
@@ -132,17 +154,17 @@ impl Calculator {
         let right = self.handle_expression(r)?;
 
         match opt {
-            Operator::Plus => self.check_overflow(left + right),
-            Operator::Sub => self.check_overflow(left - right),
-            Operator::Mul => self.check_overflow(left * right),
+            Operator::Plus => Ok(left + right),
+            Operator::Sub => Ok(left - right),
+            Operator::Mul => Ok(left * right),
             Operator::Div => {
                 if right == 0.0 {
                     Err(CalculatorError::ArithmeticError("Division by zero"))
                 } else {
-                    self.check_overflow(left / right)
+                    Ok(left / right)
                 }
             }
-            Operator::Power => self.check_overflow(left.powf(right)),
+            Operator::Power => Ok(left.powf(right)),
             Operator::Root => {
                 if right == 0.0 {
                     Err(CalculatorError::ArithmeticError("Root with zero index"))
@@ -153,26 +175,28 @@ impl Calculator {
                         "Odd root of a negative number",
                     ))
                 } else {
-                    self.check_overflow(right.powf(left.recip()))
+                    Ok(right.powf(left.recip()))
                 }
             }
             Operator::Log => {
                 if left <= 0.0 || right <= 0.0 {
-                    Err(CalculatorError::ArithmeticError(
+                    return Err(CalculatorError::ArithmeticError(
                         "Log with zero base or zero argument",
-                    ))
-                } else {
-                    self.check_overflow(right.log(left))
+                    ));
                 }
-            }
-        }
-    }
 
-    fn check_overflow<'input>(&mut self,result: f64) -> Result<f64, CalculatorError<'input>> {
-        if result.is_infinite() || result.is_nan() {
-            Err(CalculatorError::OverflowError)
-        } else {
-            Ok(result)
+                // NOTE can't use match on float type!
+                // NOTE use log2 ,ln and log10 to get more precise result, maybe use other crates future
+                Ok(if left == 2.0 {
+                    right.log2()
+                } else if left == f64::consts::E {
+                    right.ln()
+                } else if left == 10.0 {
+                    right.log10()
+                } else {
+                    right.log(left)
+                })
+            }
         }
     }
 
