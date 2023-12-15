@@ -20,7 +20,7 @@ mod interactive;
 
 mod utils {
     pub mod error;
-    pub mod file;
+    pub mod io;
 }
 
 fn main() {
