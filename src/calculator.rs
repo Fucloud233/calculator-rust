@@ -216,7 +216,6 @@ impl Calculator {
                         "Log with zero base or zero argument",
                     ));
                 }
-
                 // NOTE can't use match on float type!
                 // NOTE use log2 ,ln and log10 to get more precise result, maybe use other crates future
                 Ok(if left == 2.0 {
@@ -231,6 +230,19 @@ impl Calculator {
             }
         }
     }
+
+    // fn check_overflow<'input>(&mut self, result: f64) -> Result<f64, CalculatorError<'input>> {
+    //     if result.is_infinite() || result.is_nan() {
+    //         Err(CalculatorError::OverflowError)
+    //     } else {
+    //         let max_precision = 10f64.powi(15);
+    //         if result.fract().abs() > 0.0 && (result.abs() * max_precision).fract() > 0.0 {
+    //             Err(CalculatorError::PrecisionError)
+    //         } else {
+    //             Ok(result)
+    //         }
+    //     }
+    // }
 
     pub(crate) fn handle_sentence<'input>(
         &mut self,

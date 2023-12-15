@@ -9,6 +9,9 @@ pub struct CalculatorError<'input> {
     index: Option<usize>
 }
 
+
+use CalculatorErrorKind::*;
+
 impl<'input> CalculatorError<'input> {
     pub fn new(kind: CalculatorErrorKind<'input>, index: Option<usize>) -> Self {
         CalculatorError {
@@ -26,6 +29,7 @@ impl<'input> CalculatorError<'input> {
             OverflowError => String::from("Overflow Error"),
             UndefinedIdError(id) => format!("Undefined Identifier Error: {:?}", id),
             UnusedExpressionError(msg) => format!("Unused Expression Error: {}", msg),
+            PrecisionError => String::from("Precision Error: the result may not be accurate"),
             // 其他错误类型...
             _ => todo!()
         }
@@ -41,27 +45,9 @@ pub enum CalculatorErrorKind<'input> {
     ArithmeticError(&'input str),
     // TODO: Overflow error needs to be done
     OverflowError,
+    PrecisionError,
     UndefinedIdError(ID),
-
     UnusedExpressionError(String),
 
     NotValueReturn,
 }
-
-use CalculatorErrorKind::*;
-
-// impl<'input> fmt::Display for CalculatorErrorKind<'input> {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         let message = match self {
-//             ParseError(e) => format!("Parse Error: {}", e),
-//             ArithmeticError(e) => format!("Arithmetic Error: {}", e),
-//             OverflowError => String::from("Overflow Error"),
-//             UndefinedIdError(id) => format!("Undefined Identifier Error: {:?}", id),
-//             UnusedExpressionError(msg) => format!("Unused Expression Error: {}", msg),
-//             // 其他错误类型...
-//             _ => todo!()
-//         };
-
-//         write!(f, "{}", &message)
-//     }
-// }
