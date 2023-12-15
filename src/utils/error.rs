@@ -20,7 +20,7 @@ impl<'input> CalculatorError<'input> {
         Err(CalculatorError::new(kind, index))
     }
     pub fn message(&self) -> String {
-        match self.kind {
+        match &self.kind {
             ParseError(e) => format!("Parse Error: {}", e),
             ArithmeticError(e) => format!("Arithmetic Error: {}", e),
             OverflowError => String::from("Overflow Error"),
