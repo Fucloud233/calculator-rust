@@ -28,8 +28,8 @@ pub fn run_cli() {
     if let Some(expr) = opt.expression {
         let mut calculator = Calculator::new();
         match calculator.calculate_expr(&expr) {
-            Ok(value) => print_value(value),
-            Err(error) => print_error(error)
+            Ok(value) => print!("{} {}", "Result => :".green(), value.to_string().bold()),
+            Err(error) => eprint!("{} {}", "An error occurred => :".red(), error.message().bold())
         }
     } else if let Some(file_path) = opt.path {
         println!("Reading file at: {}", file_path.display().to_string().cyan());
