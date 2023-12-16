@@ -139,7 +139,7 @@ impl Calculator {
                 }
             },
             // when meeting inf or nan, return error 
-            Expr::Value(value) => if value.is_finite() || value.is_nan() {
+            Expr::Value(value) => if value.is_infinite() || value.is_nan() {
                 Err(OverflowError)
             } else {
                 Ok(*value)
