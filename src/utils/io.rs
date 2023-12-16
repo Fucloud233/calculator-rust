@@ -14,12 +14,17 @@ pub fn read_lines(file_path: &str) -> Result<Vec<String>, io::Error> {
 
 
 pub fn print_value(value: f64) {
-    println!("{} {}", "Result => :".green(), value.to_string().bold())  
+    print!("{} {}\n{}", "Result => :".green(), value.to_string().bold(),"> ".green())  
+    
 }
 
 pub fn print_error(error: CalculatorError) {
     // TODO: perfect error display
-    eprintln!("{} {}", "An error occurred => :".red(), error.message().bold())  
+    eprint!("{} {}\n{}", "An error occurred => :".red(), error.message().bold(),"> ".red())  
+}
+
+pub fn print_statement() {
+    eprint!("{}\n{}", "Statement executed successfully, no value returned.".cyan(),"> ".green())  
 }
 
 // pub fn to_ref_lines(lines: &Vec<String>) -> &Vec<&'static str> {

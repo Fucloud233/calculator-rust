@@ -30,6 +30,7 @@ impl<'input> CalculatorError<'input> {
             UndefinedIdError(id) => format!("Undefined Identifier Error: {:?}", id),
             UnusedExpressionError(msg) => format!("Unused Expression Error: {}", msg),
             PrecisionError => String::from("Precision Error: the result may not be accurate"),
+            NotValueReturn => String::from("Only expression is acceptable"),
             // 其他错误类型...
             _ => todo!()
         }

@@ -1,20 +1,20 @@
 use std::io::{self, Write};
 use colored::*;
 use crate::calculator::Calculator;
-use crate::utils::io::{print_error, print_value};
+use crate::utils::io::{print_error, print_value,print_statement};
 
 pub fn interactive_mode() {
     println!(
         "{}",
-        "Entering interactive mode. Type 'exit' or 'e' to quit.\nYou can use a , b , c as variables\n, \
+        "Entering interactive mode. Type 'exit' or 'e' to quit.\nYou can use a , b , c, e as variables\n
         Sentences, expressions, and file commands ('load <file_path>') are acceptable.\n".cyan()
     );
 
     let mut buffer = String::new();
     let mut calculator = Calculator::new();
-
+    eprint!("{}", "> ".green());
+    
     loop {
-        eprint!("{}", "> ".green());
         io::stdout().flush().unwrap();
         buffer.clear();
         
@@ -26,7 +26,7 @@ pub fn interactive_mode() {
                 break;
             }
         }
-
+        
         let input = buffer.trim().to_string();
         if input == "exit" || input == "e" {
             println!("{}", "Exiting interactive mode.".green());
@@ -37,11 +37,11 @@ pub fn interactive_mode() {
             calculator.clear();
             continue;
         } 
-
+        
         match calculator.calculate_line(&input, None) {
             Ok(Some(value)) => print_value(value),
             Err(e) => print_error(e),
-            Ok(None) => println!("Statement executed successfully, no value returned.")
+            Ok(None) => print_statement()
         }
         
     }
