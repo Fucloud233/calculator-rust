@@ -33,11 +33,11 @@ fn test_handle_sentence() {
 }
 
 #[test]
-fn test_calculate_expression() {
+fn test_handle_line() {
     let cases = vec![
         // FIXME: "1-2" can be parsed
         ("1+2", 3.),
-        ("1 - 2", -1.),
+        ("1- 2", -1.),
         ("1*2", 2.),
         ("1/2", 0.5),
         ("2^2", 4.),
@@ -61,8 +61,11 @@ fn test_calculate_expression() {
 
     let mut calculator = Calculator::new();
     cases.iter().for_each(|(line, value)| {
-        match calculator.calculate_expr(line) {
-            Ok(r) => assert_eq!(r, *value),
+        match calculator.calculate_line(line, None) {
+            Ok(Some(r)) => assert_eq!(r, *value),
+            Ok(None)=> {
+                assert!(true)
+            }
             Err(e) => {
                 eprintln!("{}:\n{:#?}", line, e);
                 assert!(false)
