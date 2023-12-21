@@ -49,6 +49,5 @@ pub enum CalculatorErrorKind<'input> {
     PrecisionError,
     UndefinedIdError(ID),
     UnusedExpressionError(String),
-
     NotValueReturn,
 }

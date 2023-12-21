@@ -80,7 +80,7 @@ pub fn file_interactive_mode(file_path: &str, calculator: &mut Calculator) {
                         for line in &lines[line_index..] {
                             execute_line(line, calculator);
                         }
-                        println!(
+                        print!(
                             "{}{}",
                             "=> Exiting file interactive mode, Clear all data => \n".cyan(),
                             "> ".green()
@@ -139,13 +139,12 @@ pub fn execute_line(line: &str, calculator: &mut Calculator) {
         Err(e) => format!("Line error => : {:?}", e).red(),
     };
 
-    // TODO: display format to be done
     let formatted_output = format!(
         "{:<width$}| Expression: {}",
-        result,
+        "",
         line_trimmed.cyan(),
         width = terminal_width - line_display_width
     );
 
-    println!("{}", formatted_output);
+    println!("{}\n{}",result, formatted_output);
 }
