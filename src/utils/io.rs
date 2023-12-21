@@ -23,9 +23,6 @@ pub fn print_error(error: CalculatorError) {
     eprint!("{} {}\n{}", "An error occurred => :".red(), error.message().bold(),"> ".red())  
 }
 
-pub fn print_statement() {
-    eprint!("{}\n{}", "Statement executed successfully, no value returned.".cyan(),"> ".green())  
-}
 
 // pub fn to_ref_lines(lines: &Vec<String>) -> &Vec<&'static str> {
 //     lines.iter().map(|line| line.as_ref()).collect()

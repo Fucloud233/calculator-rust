@@ -1,5 +1,5 @@
 use crate::calculator::Calculator;
-use crate::utils::io::{print_error, print_statement, print_value, read_lines};
+use crate::utils::io::read_lines;
 use colored::*;
 use std::io::{self, Write};
 use std::path::Path;
@@ -12,8 +12,7 @@ pub fn interactive_mode() {
 
     let mut buffer = String::new();
     let mut calculator = Calculator::new();
-    eprint!("{}", "> ".green());
-
+    print!("{}", "=> ".cyan());
     loop {
         io::stdout().flush().unwrap();
         buffer.clear();
@@ -38,11 +37,8 @@ pub fn interactive_mode() {
             continue;
         }
 
-        match calculator.calculate_line(&input, None) {
-            Ok(Some(value)) => print_value(value),
-            Err(e) => print_error(e),
-            Ok(None) => print_statement(),
-        }
+        execute_line(&input,&mut calculator);
+        print!("{}", "=> ".cyan());
     }
 }
 
@@ -111,9 +107,8 @@ pub fn file_interactive_mode(file_path: &str, calculator: &mut Calculator) {
                         return;
                     }
                     _ => print!(
-                        "{}{}",
+                        "{}",
                         "Unknown command. Use 'run', 'step', or 'exit'.\n> ".red(),
-                        "> ".red()
                     ),
                 }
             }

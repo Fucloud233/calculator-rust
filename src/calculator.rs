@@ -33,31 +33,6 @@ impl Calculator {
 
     /* --------------- calculator --------------- */
 
-    // pub fn handle_line<'input>(
-    //     &mut self,
-    //     line: &'input str,
-    //     allow_sentences: bool,
-    // ) -> Result<Option<f64>, CalculatorError<'input>> {
-    //     let parser_result = parse_line(line)?;
-    //     match parser_result {
-    //         Line::Expression(expr) => {
-    //             // 表达式的处理返回一个数值结果
-    //             self.handle_expression(&expr).map(Some)
-    //         }
-    //         Line::Sentence(id, expr) => {
-    //             if allow_sentences {
-    //                 // 处理语句但不返回数值结果
-    //                 self.handle_sentence(&id, &expr)?;
-    //                 Ok(None) // 表示没有数值结果
-    //             } else {
-    //                 CalculatorError::new_err(UnusedExpressionError(
-    //                     "use expression instead of Sentences, for example: 1+1".into()
-    //                 ), None)
-    //             }
-    //         }
-    //     }
-    // }
-
     pub fn calculate_expr<'input>(
         &mut self,
         line: &'input str,
