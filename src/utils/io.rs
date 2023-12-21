@@ -19,7 +19,6 @@ pub fn print_value(value: f64) {
 }
 
 pub fn print_error(error: CalculatorError) {
-    // TODO: perfect error display
     eprint!("{} {}\n{}", "An error occurred => :".red(), error.message().bold(),"> ".red())  
 }
 

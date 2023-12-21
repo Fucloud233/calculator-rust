@@ -130,7 +130,6 @@ pub fn execute_line(line: &str, calculator: &mut Calculator) {
     let result = match calculator.calculate_line(line, None) {
         Ok(Some(result)) => format!("Line result => : {}", result).green(),
         Ok(None) => "Line executed successfully, no value returned.".to_string().green(),
-        // TODO: error display
         Err(e) => format!("Line error => : {}", e.message()).red(),
     };
 

@@ -28,7 +28,7 @@ impl<'input> CalculatorError<'input> {
             ArithmeticError(e) => format!("Arithmetic Error: {}", e),
             OverflowError => format!("Overflow Error: Maximum allowed digit count is 15"),
             UndefinedIdError(id) => format!("Undefined Identifier Error: {:?}", id),
-            UnusedExpressionError(msg) => format!("Unused Expression Error: {}", msg),
+            // UnusedExpressionError(msg) => format!("Unused Expression Error: {}", msg),
             NotValueReturn => String::from("Only expression is acceptable"),
             // 其他错误类型...
             _ => todo!()
@@ -43,9 +43,8 @@ pub enum CalculatorErrorKind<'input> {
 
     // you can define other types of error
     ArithmeticError(&'input str),
-    // TODO: Overflow error needs to be done
     OverflowError,
     UndefinedIdError(ID),
-    UnusedExpressionError(String),
+    // UnusedExpressionError(String),
     NotValueReturn,
 }
