@@ -26,10 +26,9 @@ impl<'input> CalculatorError<'input> {
         match &self.kind {
             ParseError(e) => format!("Parse Error: {}", e),
             ArithmeticError(e) => format!("Arithmetic Error: {}", e),
-            OverflowError => String::from("Overflow Error"),
+            OverflowError => format!("Overflow Error: Maximum allowed digit count is 15"),
             UndefinedIdError(id) => format!("Undefined Identifier Error: {:?}", id),
             UnusedExpressionError(msg) => format!("Unused Expression Error: {}", msg),
-            PrecisionError => String::from("Precision Error: the result may not be accurate"),
             NotValueReturn => String::from("Only expression is acceptable"),
             // 其他错误类型...
             _ => todo!()
@@ -46,7 +45,6 @@ pub enum CalculatorErrorKind<'input> {
     ArithmeticError(&'input str),
     // TODO: Overflow error needs to be done
     OverflowError,
-    PrecisionError,
     UndefinedIdError(ID),
     UnusedExpressionError(String),
     NotValueReturn,

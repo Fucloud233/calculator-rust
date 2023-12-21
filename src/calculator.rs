@@ -7,7 +7,7 @@ use lalrpop_util::lalrpop_mod;
 use crate::ast::{Expr, Line, Operator, UnaryOperator, ID};
 use crate::utils::error::{
     CalculatorError,
-    CalculatorErrorKind::{*, self}
+    CalculatorErrorKind::{self, *},
 };
 
 pub struct Calculator {
@@ -41,33 +41,38 @@ impl Calculator {
 
         let parser_result = parse_line(line)?;
 
-        if let Line::Expression(expr) = parser_result {
-            self.handle_expression(&expr)
-                .map_err(|kind| CalculatorError::new(kind, None))
-        } else {
-            // an error will occur when parsing sentence
-            CalculatorError::new_err(NotValueReturn, None)
+        match parser_result {
+            Line::Expression(expr) => {
+                let result = self
+                    .handle_expression(&expr)
+                    .map_err(|kind| CalculatorError::new(kind, None))?;
+
+                self.check_overflow(result)
+                    .map_err(|kind| CalculatorError::new(kind, None))
+            }
+            _ => CalculatorError::new_err(NotValueReturn, None),
         }
     }
 
-    pub fn calculate_line<'input> (
+    pub fn calculate_line<'input>(
         &mut self,
         line: &'input str,
-        index: Option<usize>
+        index: Option<usize>,
     ) -> Result<Option<f64>, CalculatorError<'input>> {
-        let wrap_err = |kind: CalculatorErrorKind<'input>| {
-            CalculatorError::new(kind, index)
-        };
+        let wrap_err = |kind: CalculatorErrorKind<'input>| CalculatorError::new(kind, index);
 
         // it will call line_parser to parse
         let parse_result: Line = parse_line(&line)?;
-        Ok(match parse_result {
-            Line::Expression(expr) => Some(self.handle_expression(&expr).map_err(wrap_err)?),
-            Line::Sentence(id, expr) => {
-                self.handle_sentence(&id, &expr) .map_err(wrap_err)?;
-                None
+        match parse_result {
+            Line::Expression(expr) => {
+                let result = self.handle_expression(&expr).map_err(wrap_err)?;
+                self.check_overflow(result).map_err(wrap_err).map(Some)
             }
-        })
+            Line::Sentence(id, expr) => {
+                self.handle_sentence(&id, &expr).map_err(wrap_err)?;
+                Ok(None)
+            }
+        }
     }
 
     // [Notice] reading and calculating must be decoupled
@@ -95,7 +100,6 @@ impl Calculator {
         self.symbol_table.clear();
     }
 
-
     /* --------------- handler --------------- */
     pub(crate) fn handle_expression<'input>(
         &mut self,
@@ -113,12 +117,14 @@ impl Calculator {
                     }
                 }
             },
-            // when meeting inf or nan, return error 
-            Expr::Value(value) => if value.is_infinite() || value.is_nan() {
-                Err(OverflowError)
-            } else {
-                Ok(*value)
-            },
+            // when meeting inf or nan, return error
+            Expr::Value(value) => {
+                if value.is_infinite() || value.is_nan() {
+                    Err(OverflowError)
+                } else {
+                    Ok(*value)
+                }
+            }
             Expr::Operation { l, r, opt } => self.handle_operation(l, r, opt),
             Expr::UnaryOperation { operand, opt } => self.handle_unary_operation(operand, opt),
         }
@@ -178,18 +184,14 @@ impl Calculator {
                 } else if right < 0.0 {
                     Err(ArithmeticError("Root with negative index"))
                 } else if left < 0.0 && right % 2.0 == 0.0 {
-                    Err(ArithmeticError(
-                        "Odd root of a negative number",
-                    ))
+                    Err(ArithmeticError("Odd root of a negative number"))
                 } else {
                     Ok(right.powf(left.recip()))
                 }
             }
             Operator::Log => {
                 if left <= 0.0 || right <= 0.0 {
-                    return Err(ArithmeticError(
-                        "Log with zero base or zero argument",
-                    ));
+                    return Err(ArithmeticError("Log with zero base or zero argument"));
                 }
                 // NOTE can't use match on float type!
                 // NOTE use log2 ,ln and log10 to get more precise result, maybe use other crates future
@@ -206,18 +208,21 @@ impl Calculator {
         }
     }
 
-    // fn check_overflow<'input>(&mut self, result: f64) -> Result<f64, CalculatorError<'input>> {
-    //     if result.is_infinite() || result.is_nan() {
-    //         Err(CalculatorError::OverflowError)
-    //     } else {
-    //         let max_precision = 10f64.powi(15);
-    //         if result.fract().abs() > 0.0 && (result.abs() * max_precision).fract() > 0.0 {
-    //             Err(CalculatorError::PrecisionError)
-    //         } else {
-    //             Ok(result)
-    //         }
-    //     }
-    // }
+    fn check_overflow<'input>(&mut self, result: f64) -> Result<f64, CalculatorErrorKind<'input>> {
+        if result.is_infinite()
+            || result.is_nan()
+            || result
+                .to_string()
+                .chars()
+                .filter(|&c| c.is_digit(10))
+                .count()
+                > 15
+        {
+            Err(OverflowError)
+        } else {
+            Ok(result)
+        }
+    }
 
     pub(crate) fn handle_sentence<'input>(
         &mut self,
@@ -238,6 +243,6 @@ lalrpop_mod!(pub parser);
 fn parse_line(line: &str) -> Result<Line, CalculatorError> {
     match parser::LineParser::new().parse(line) {
         Ok(r) => Ok(r),
-        Err(e) => CalculatorError::new_err(ParseError(e), None)
+        Err(e) => CalculatorError::new_err(ParseError(e), None),
     }
 }
