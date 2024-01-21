@@ -44,6 +44,7 @@ fn test_handle_line() {
         ("e^1", f64::consts::E),
         ("e^{-1}", f64::consts::E.recip()),
         ("\\sqrt[3]8", 2.),
+        ("\\sqrt{16}", 4.),
         ("\\log_2 8", 3.),
         ("\\ln e", 1.),
         ("-(3+4)", -7.),
@@ -51,19 +52,17 @@ fn test_handle_line() {
         ("\\sin(\\pi / 2)", 1.),
         ("\\cos0", 1.),
         ("\\tan(\\pi / 4)", 1.),
-
         // extension test cases
         ("\\sin(\\pi/2) * 2", 2.),
         ("\\sin(\\pi/2)!", 1.),
         ("\\sin(\\sin(\\pi/2) * (\\pi/2))", 1.),
-
     ];
 
     let mut calculator = Calculator::new();
     cases.iter().for_each(|(line, value)| {
         match calculator.calculate_line(line, None) {
             Ok(Some(r)) => assert_eq!(r, *value),
-            Ok(None)=> {
+            Ok(None) => {
                 assert!(true)
             }
             Err(e) => {

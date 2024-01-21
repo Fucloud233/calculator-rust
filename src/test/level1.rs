@@ -64,7 +64,7 @@ fn sqrt_test() {
         (
             r"\sqrt 2",
             Expr::Operation {
-                l: Box::new(Expr::Value(0.5)),
+                l: Box::new(Expr::Value(2.)),
                 r: Box::new(Expr::Value(2.)),
                 opt: Operator::Root,
             },
@@ -72,7 +72,7 @@ fn sqrt_test() {
         (
             r"\sqrt {2.5}",
             Expr::Operation {
-                l: Box::new(Expr::Value(0.5)),
+                l: Box::new(Expr::Value(2.)),
                 r: Box::new(Expr::Value(2.5)),
                 opt: Operator::Root,
             },
@@ -80,7 +80,7 @@ fn sqrt_test() {
         (
             r"\sqrt {(a)}",
             Expr::Operation {
-                l: Box::new(Expr::Value(0.5)),
+                l: Box::new(Expr::Value(2.)),
                 r: Box::new(Expr::Id(ID::ASCII('a'))),
                 opt: Operator::Root,
             },
