@@ -59,7 +59,7 @@ pub (crate) Value: f64 = {
 }
 
 pub (crate) Id: ast::ID = {
-    r"[a-c]|[x-z]" => ast::ID::ASCII(<>.chars().next().unwrap()),
+    r"[a-d]|[x-z]" => ast::ID::ASCII(<>.chars().next().unwrap()),
     "\\alpha" => ast::ID::Greek(ast::Greek::Alpha),
     "\\beta" => ast::ID::Greek(ast::Greek::Beta),
     "\\gamma" => ast::ID::Greek(ast::Greek::Gamma),
