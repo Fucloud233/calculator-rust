@@ -146,7 +146,7 @@ Level1: Box<ast::Expr> = {
     //  \sqrt{}
     SQRT <r: LatexTerm> 
         => Box::new(ast::Expr::Operation{
-            l: Box::new(ast::Expr::Value(0.5)), 
+            l: Box::new(ast::Expr::Value(2.)), 
             r, 
             opt: ast::Operator::Root
         }),
