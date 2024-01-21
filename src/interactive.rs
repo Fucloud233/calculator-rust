@@ -81,7 +81,7 @@ pub fn file_interactive_mode(file_path: &str, calculator: &mut Calculator) {
                         print!(
                             "{}{}",
                             "=> Exiting file interactive mode, Clear all data => \n".cyan(),
-                            "> ".green()
+                            "=> ".green()
                         );
                         return;
                     }
@@ -95,7 +95,7 @@ pub fn file_interactive_mode(file_path: &str, calculator: &mut Calculator) {
                             print!(
                                 "{}{}",
                                 "=> Exiting file interactive mode, Clear all data => \n".cyan(),
-                                "> ".green()
+                                "=> ".green()
                             );
                             return;
                         }
