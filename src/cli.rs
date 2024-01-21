@@ -32,6 +32,14 @@ pub fn run_cli() {
             Err(error) => eprint!("{} {}", "An error occurred => :".red(), error.message().bold())
         }
     } else if let Some(file_path) = opt.path {
+        if file_path.extension().and_then(|s| s.to_str()) != Some("calc") {
+            print!(
+                "{}{}",
+                "=> Error: Only .calc files are supported\n".red(),
+                "existing cli".red()
+            );
+            return;
+        }
         println!("Reading file at: {}", file_path.display().to_string().cyan());
         let lines = match fs::read_to_string(&file_path) {
             Ok(contents) => {

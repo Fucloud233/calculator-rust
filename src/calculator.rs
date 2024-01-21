@@ -216,7 +216,7 @@ impl Calculator {
                 .chars()
                 .filter(|&c| c.is_digit(10))
                 .count()
-                > 15
+                > 30
         {
             Err(OverflowError)
         } else {

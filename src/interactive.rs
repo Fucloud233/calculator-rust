@@ -7,7 +7,9 @@ use std::path::Path;
 pub fn interactive_mode() {
     println!(
         "{}{}{}",
-        "Entering interactive mode. Type 'exit' or 'e' to quit.\nYou can use a , b , c, e as variables\nSentences, expressions, and file commands ('".cyan(),"load <file_path>".bright_blue(),"') are acceptable.".cyan()
+        "Entering interactive mode. Type 'exit' or 'e' to quit.\nYou can use  \\alpha, \\beta, x, y, z, a, b, c, d  as variables
+        e is a constant,you can't change its value
+        Sentences, expressions, and file commands ('".cyan(),"load <file_path>".bright_blue(),"') are acceptable.".cyan()
     );
 
     let mut buffer = String::new();
@@ -47,14 +49,14 @@ pub fn file_interactive_mode(file_path: &str, calculator: &mut Calculator) {
         print!(
             "{}{}",
             "=> Error: Only .calc files are supported\n".red(),
-            "> ".red()
+            "=> ".red()
         );
         return;
     }
     match read_lines(file_path) {
         Err(e) => {
             println!("{} {}", "=> Error reading file:".red(), e);
-            print!("{}", "> ".red());
+            print!("{}", "=> ".red());
             return;
         }
         Ok(lines) => {
@@ -79,7 +81,7 @@ pub fn file_interactive_mode(file_path: &str, calculator: &mut Calculator) {
                         print!(
                             "{}{}",
                             "=> Exiting file interactive mode, Clear all data => \n".cyan(),
-                            "> ".green()
+                            "=> ".green()
                         );
                         return;
                     }
@@ -93,7 +95,7 @@ pub fn file_interactive_mode(file_path: &str, calculator: &mut Calculator) {
                             print!(
                                 "{}{}",
                                 "=> Exiting file interactive mode, Clear all data => \n".cyan(),
-                                "> ".green()
+                                "=> ".green()
                             );
                             return;
                         }
@@ -102,7 +104,7 @@ pub fn file_interactive_mode(file_path: &str, calculator: &mut Calculator) {
                         print!(
                             "{}{}",
                             "=> Exiting file interactive mode, Clear all data => \n".cyan(),
-                            "> ".green()
+                            "=> ".green()
                         );
                         return;
                     }

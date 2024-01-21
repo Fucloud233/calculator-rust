@@ -1,0 +1,18 @@
+a = 1
+b = 2
+c = (a + b)
+e = a - b
+c * e
+e = a / b
+e = \frac{a}{b}
+-a
+c!
+\sin{\pi / 2}
+\cos0
+\tan{\pi / 4}
+2^3
+\sqrt4
+\sqrt[3]8
+\log_{2}{10}
+\log_2{4}
+\lne
