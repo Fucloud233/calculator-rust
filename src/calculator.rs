@@ -5,7 +5,10 @@ use std::f64;
 use lalrpop_util::lalrpop_mod;
 
 use crate::ast::{Expr, Line, Operator, UnaryOperator, ID};
-use crate::utils::error::CalculatorError;
+use crate::utils::error::{
+    CalculatorError,
+    CalculatorErrorKind::{self, *},
+};
 
 pub struct Calculator {
     symbol_table: HashMap<ID, f64>,
@@ -22,6 +25,7 @@ impl Calculator {
         }
     }
 
+    #[inline]
     fn before_calculate(&mut self) {
         // you must clear the symbol table before clear
         self.symbol_table.clear();
@@ -29,7 +33,6 @@ impl Calculator {
 
     /* --------------- calculator --------------- */
 
-    // return error type to be determined
     pub fn calculate_expr<'input>(
         &mut self,
         line: &'input str,
@@ -38,11 +41,37 @@ impl Calculator {
 
         let parser_result = parse_line(line)?;
 
-        if let Line::Expression(expr) = parser_result {
-            self.handle_expression(&expr)
-        } else {
-            // an error will occur when parsing sentence
-            todo!()
+        match parser_result {
+            Line::Expression(expr) => {
+                let result = self
+                    .handle_expression(&expr)
+                    .map_err(|kind| CalculatorError::new(kind, None))?;
+
+                self.check_overflow(result)
+                    .map_err(|kind| CalculatorError::new(kind, None))
+            }
+            _ => CalculatorError::new_err(NotValueReturn, None),
+        }
+    }
+
+    pub fn calculate_line<'input>(
+        &mut self,
+        line: &'input str,
+        index: Option<usize>,
+    ) -> Result<Option<f64>, CalculatorError<'input>> {
+        let wrap_err = |kind: CalculatorErrorKind<'input>| CalculatorError::new(kind, index);
+
+        // it will call line_parser to parse
+        let parse_result: Line = parse_line(&line)?;
+        match parse_result {
+            Line::Expression(expr) => {
+                let result = self.handle_expression(&expr).map_err(wrap_err)?;
+                self.check_overflow(result).map_err(wrap_err).map(Some)
+            }
+            Line::Sentence(id, expr) => {
+                self.handle_sentence(&id, &expr).map_err(wrap_err)?;
+                Ok(None)
+            }
         }
     }
 
@@ -58,27 +87,24 @@ impl Calculator {
         // using result array
         // to decouple computation and output
         let mut results: Vec<f64> = Vec::new();
-        for line in lines {
-            // it will call line_parser to parse
-            // which will return Line or custom error
-            let parse_result: Line = parse_line(&line)?;
-            match parse_result {
-                Line::Expression(expr) => {
-                    let value = self.handle_expression(&expr)?;
-                    results.push(value);
-                }
-                Line::Sentence(id, expr) => self.handle_sentence(&id, &expr)?,
+        for (i, line) in lines.iter().enumerate() {
+            if let Some(value) = self.calculate_line(line, Some(i))? {
+                results.push(value)
             }
         }
 
         Ok(results)
     }
 
+    pub fn clear(&mut self) {
+        self.symbol_table.clear();
+    }
+
     /* --------------- handler --------------- */
     pub(crate) fn handle_expression<'input>(
         &mut self,
         expr: &Expr,
-    ) -> Result<f64, CalculatorError<'input>> {
+    ) -> Result<f64, CalculatorErrorKind<'input>> {
         match expr {
             Expr::Id(id) => match id {
                 ID::E => Ok(f64::consts::E),
@@ -87,11 +113,18 @@ impl Calculator {
                     if let Some(value) = self.symbol_table.get(id) {
                         Ok(*value)
                     } else {
-                        Err(CalculatorError::UndefinedIdError(*id))
+                        Err(UndefinedIdError(*id))
                     }
                 }
             },
-            Expr::Value(value) => Ok(*value),
+            // when meeting inf or nan, return error
+            Expr::Value(value) => {
+                if value.is_infinite() || value.is_nan() {
+                    Err(OverflowError)
+                } else {
+                    Ok(*value)
+                }
+            }
             Expr::Operation { l, r, opt } => self.handle_operation(l, r, opt),
             Expr::UnaryOperation { operand, opt } => self.handle_unary_operation(operand, opt),
         }
@@ -102,7 +135,7 @@ impl Calculator {
         &mut self,
         operand: &Expr,
         opt: &UnaryOperator,
-    ) -> Result<f64, CalculatorError<'input>> {
+    ) -> Result<f64, CalculatorErrorKind<'input>> {
         // Avoid floating point errors introduced by rounding
         let rounding = |num: f64| {
             if (num - num.round()).abs() < 1e-10 {
@@ -129,18 +162,17 @@ impl Calculator {
         l: &Expr,
         r: &Expr,
         opt: &Operator,
-    ) -> Result<f64, CalculatorError<'input>> {
+    ) -> Result<f64, CalculatorErrorKind<'input>> {
         let left = self.handle_expression(l)?;
         let right = self.handle_expression(r)?;
 
-        // TODO deal with overflow error
         match opt {
             Operator::Plus => Ok(left + right),
             Operator::Sub => Ok(left - right),
             Operator::Mul => Ok(left * right),
             Operator::Div => {
                 if right == 0.0 {
-                    Err(CalculatorError::ArithmeticError("Division by zero"))
+                    Err(ArithmeticError("Division by zero"))
                 } else {
                     Ok(left / right)
                 }
@@ -148,24 +180,19 @@ impl Calculator {
             Operator::Power => Ok(left.powf(right)),
             Operator::Root => {
                 if right == 0.0 {
-                    Err(CalculatorError::ArithmeticError("Root with zero index"))
+                    Err(ArithmeticError("Root with zero index"))
                 } else if right < 0.0 {
-                    Err(CalculatorError::ArithmeticError("Root with negative index"))
+                    Err(ArithmeticError("Root with negative index"))
                 } else if left < 0.0 && right % 2.0 == 0.0 {
-                    Err(CalculatorError::ArithmeticError(
-                        "Odd root of a negative number",
-                    ))
+                    Err(ArithmeticError("Odd root of a negative number"))
                 } else {
                     Ok(right.powf(left.recip()))
                 }
             }
             Operator::Log => {
                 if left <= 0.0 || right <= 0.0 {
-                    return Err(CalculatorError::ArithmeticError(
-                        "Log with zero base or zero argument",
-                    ));
+                    return Err(ArithmeticError("Log with zero base or zero argument"));
                 }
-
                 // NOTE can't use match on float type!
                 // NOTE use log2 ,ln and log10 to get more precise result, maybe use other crates future
                 Ok(if left == 2.0 {
@@ -181,11 +208,27 @@ impl Calculator {
         }
     }
 
+    fn check_overflow<'input>(&mut self, result: f64) -> Result<f64, CalculatorErrorKind<'input>> {
+        if result.is_infinite()
+            || result.is_nan()
+            || result
+                .to_string()
+                .chars()
+                .filter(|&c| c.is_digit(10))
+                .count()
+                > 15
+        {
+            Err(OverflowError)
+        } else {
+            Ok(result)
+        }
+    }
+
     pub(crate) fn handle_sentence<'input>(
         &mut self,
         id: &ID,
         expr: &Expr,
-    ) -> Result<(), CalculatorError<'input>> {
+    ) -> Result<(), CalculatorErrorKind<'input>> {
         let id_value = self.handle_expression(expr)?;
         self.symbol_table.insert(*id, id_value);
         Ok(())
@@ -200,6 +243,6 @@ lalrpop_mod!(pub parser);
 fn parse_line(line: &str) -> Result<Line, CalculatorError> {
     match parser::LineParser::new().parse(line) {
         Ok(r) => Ok(r),
-        Err(e) => return Err(CalculatorError::ParseError(e)),
+        Err(e) => CalculatorError::new_err(ParseError(e), None),
     }
 }

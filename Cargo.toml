@@ -1,5 +1,5 @@
 [package]
-name = "calculator"
+name = "calc"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,8 +8,19 @@ edition = "2021"
 [dependencies]
 # if you want to use this crate
 # you must import it in the same way as below
+
+# See documentations at https://lalrpop.github.io/lalrpop/index.html
 lalrpop-util = { version = "0.20.0", features = ["lexer", "unicode"] }
 statrs = "0.16.0"
+
+# we use structopt and colored to build our cli terminal
+structopt = "0.3"
+colored = "2.0"
+terminal_size = "0.3.0"
+term_size = "0.3.2"
+
+# High-precision operations
+# rug = "1.11.0"
 
 
 [build-dependencies]
